@@ -1,0 +1,8 @@
+rootProject.name = 'tasks'
+
+include "tasks"
+project(":tasks").projectDir = file("impl")
+include "tasks-examples"
+project(":tasks-examples").projectDir = file("examples")
+
+

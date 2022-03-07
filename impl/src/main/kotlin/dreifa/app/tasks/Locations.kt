@@ -74,9 +74,9 @@ class TestLocations(
 
     override fun serviceHomeDirectory(product: String, service: String, instance: String?): String {
         val location = if (instance == null || instance.isEmpty()) {
-            "${root()}/$suffix/$product/$service"
+            "${root()}/$product/$service"
         } else {
-            "${root()}/$suffix/$product/$service-$instance"
+            "${root()}/$product/$service-$instance"
         }
         File(location).mkdirs()
         return location
@@ -85,7 +85,6 @@ class TestLocations(
     fun suffix(): String {
         return suffix
     }
-
 
     fun homeDirectory(): String {
         return File(root()).absolutePath

@@ -39,9 +39,7 @@ interface Locations {
      * files stored here
      */
     fun tempDirectory(): String
-
 }
-
 
 // for use in test cases
 class TestLocations(
@@ -78,7 +76,7 @@ class TestLocations(
             result.append("/").append(service)
         }
         if (instance != null && instance.isNotEmpty()) {
-            result.append("/").append("-").append(instance)
+            result.append("-").append(instance)
         }
         return result.toString()
     }
@@ -95,7 +93,6 @@ class TestLocations(
         return if (baseDir == ".") ".testing/$suffix" else "$baseDir/.testing/$suffix"
     }
 }
-
 
 // for use locally
 class LocalLocations(private val root: String = System.getProperty("user.home") + "/.tasks") : Locations {
@@ -125,7 +122,7 @@ class LocalLocations(private val root: String = System.getProperty("user.home") 
             result.append("/").append(service)
         }
         if (instance != null && instance.isNotEmpty()) {
-            result.append("/").append("-").append(instance)
+            result.append("-").append(instance)
         }
         File(result.toString()).mkdirs()
         return result.toString()
@@ -164,7 +161,7 @@ class UnixServerLocations(private val root: String = "/opt/tasks") : Locations {
             result.append("/").append(service)
         }
         if (instance != null && instance.isNotEmpty()) {
-            result.append("/").append("-").append(instance)
+            result.append("-").append(instance)
         }
         File(result.toString()).mkdirs()
         return result.toString()

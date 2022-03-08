@@ -4,7 +4,6 @@ import dreifa.app.helpers.random
 import dreifa.app.tasks.executionContext.ExecutionContext
 import java.io.File
 
-
 /**
  * One class for all location information. The implementing class should ensure that the
  * requested directories exist.
@@ -14,13 +13,13 @@ interface Locations {
     /**
      * The home directory for a service
      */
-    fun serviceHomeDirectory(product: String, service: String, instance: String? = null): String
+    fun serviceHomeDirectory(product: String, service: String? = null, instance: String? = null): String
 
     /**
      * The home directory for a service, picking up the
      * instance qualifier from the execution context
      */
-    fun serviceHomeDirectory(ctx: ExecutionContext, product: String, service: String): String {
+    fun serviceHomeDirectory(ctx: ExecutionContext, product: String, service: String? = null): String {
         return serviceHomeDirectory(product, service, ctx.instanceQualifier()?.toLowerCase())
     }
 
@@ -72,14 +71,16 @@ class TestLocations(
         return "${root()}/tmp"
     }
 
-    override fun serviceHomeDirectory(product: String, service: String, instance: String?): String {
-        val location = if (instance == null || instance.isEmpty()) {
-            "${root()}/$product/$service"
-        } else {
-            "${root()}/$product/$service-$instance"
+    override fun serviceHomeDirectory(product: String, service: String?, instance: String?): String {
+        val result = StringBuffer()
+        result.append(root()).append("/").append(product)
+        if (service != null && service.isNotEmpty()) {
+            result.append("/").append(service)
         }
-        File(location).mkdirs()
-        return location
+        if (instance != null && instance.isNotEmpty()) {
+            result.append("/").append("-").append(instance)
+        }
+        return result.toString()
     }
 
     fun suffix(): String {
@@ -117,14 +118,17 @@ class LocalLocations(private val root: String = System.getProperty("user.home") 
         return "$root/tmp"
     }
 
-    override fun serviceHomeDirectory(product: String, service: String, instance: String?): String {
-        val location = if (instance == null || instance.isEmpty()) {
-            "$root/$product/$service"
-        } else {
-            "$root/$product/$service-$instance"
+    override fun serviceHomeDirectory(product: String, service: String?, instance: String?): String {
+        val result = StringBuffer()
+        result.append(root).append("/").append(product)
+        if (service != null && service.isNotEmpty()) {
+            result.append("/").append(service)
         }
-        File(location).mkdirs()
-        return location
+        if (instance != null && instance.isNotEmpty()) {
+            result.append("/").append("-").append(instance)
+        }
+        File(result.toString()).mkdirs()
+        return result.toString()
     }
 
     fun homeDirectory(): String {
@@ -153,13 +157,16 @@ class UnixServerLocations(private val root: String = "/opt/tasks") : Locations {
         return "$root/tmp"
     }
 
-    override fun serviceHomeDirectory(product: String, service: String, instance: String?): String {
-        val location = if (instance == null || instance.isEmpty()) {
-            "$root/$product/$service"
-        } else {
-            "$root/$product/$service-$instance"
+    override fun serviceHomeDirectory(product: String, service: String?, instance: String?): String {
+        val result = StringBuffer()
+        result.append(root).append("/").append(product)
+        if (service != null && service.isNotEmpty()) {
+            result.append("/").append(service)
         }
-        File(location).mkdirs()
-        return location
+        if (instance != null && instance.isNotEmpty()) {
+            result.append("/").append("-").append(instance)
+        }
+        File(result.toString()).mkdirs()
+        return result.toString()
     }
 }

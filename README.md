@@ -57,5 +57,3 @@ JitPack build status is at https://jitpack.io/com/github/dreifadotapp/tasks/$rel
 * more on building and using Tasks is [here](./docs/tasks.md)
 * details of the Logging Context are [here](./docs/logging.md)
 * design notes on the "task worker" concept are [here](./docs/task-worker.md)
-
-

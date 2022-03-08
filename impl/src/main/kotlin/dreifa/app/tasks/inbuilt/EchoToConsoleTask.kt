@@ -5,7 +5,6 @@ import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import java.util.*
 
-
 /**
  * Just echo the message supplied. For testing and debug
  */

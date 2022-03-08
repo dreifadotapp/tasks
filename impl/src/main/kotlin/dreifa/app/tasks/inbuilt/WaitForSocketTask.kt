@@ -24,24 +24,25 @@ class WaitForSocketTaskImpl : WaitForSocketTask {
         channelId: UniqueId,
         input: SocketAddress
     ) {
-        TODO("Not yet implemented")
+        doit(ctx, input)
     }
 
     override fun taskId(): UUID {
         return taskId
     }
 
-//    override fun exec(ctx: ExecutionContext, params: SocketAddress): Future<Long> {
-//        val start = System.currentTimeMillis()
-//        return ctx.executorService().submit<Long> {
-//            while (!NetworkingHelper.isSocketAlive(params)) {
-//                Thread.sleep(1000)
-//            }
-//            System.currentTimeMillis() - start
-//        }
-//    }
+    fun doit(ctx: ExecutionContext, params: SocketAddress): Long {
+        val start = System.currentTimeMillis()
+        return ctx.executorService().submit<Long> {
+            while (!isSocketAlive(params)) {
+                Thread.sleep(1000)
+            }
+            System.currentTimeMillis() - start
+        }.get()
+    }
 }
 
+fun isSocketAlive(params: SocketAddress) = false
 
 class WaitForSocketTaskFake : WaitForSocketTask {
     private val taskId = UUID.randomUUID()
@@ -57,8 +58,6 @@ class WaitForSocketTaskFake : WaitForSocketTask {
     override fun taskId(): UUID {
         return taskId
     }
-
-
 }
 
 

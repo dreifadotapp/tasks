@@ -1,4 +1,4 @@
-package  dreifa.app.tasks.inbuilt
+package dreifa.app.tasks.inbuilt
 
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
@@ -54,7 +54,6 @@ class DeterminePublishedIpAddressTaskImpl : DeterminePublishedIpAddressTask {
         ctx.log(LogMessage.info("Assuming local address of $localIP from JVM"))
         return localIP
     }
-
 
     // using plain old java code to minimise 3rd party deps
     private fun doRequest(targetURL: String): RequestResult {

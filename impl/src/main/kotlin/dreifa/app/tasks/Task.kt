@@ -1,6 +1,5 @@
 package dreifa.app.tasks
 
-
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.tasks.executionContext.DefaultExecutionContextModifier
 import dreifa.app.tasks.executionContext.ExecutionContext
@@ -15,6 +14,12 @@ interface Task {
      */
     fun taskId(): UUID
 }
+
+// An marker interface to indicate that the Task is Idempotent, i.e. it is
+// safe to call it multiple times.
+//
+// Ideally any Task is Idempotent
+interface IdempotentTask {}
 
 
 /**
@@ -31,9 +36,6 @@ interface BlockingTask<in I, out O> : Task {
 interface UnitBlockingTask<I> : BlockingTask<I, Unit> {
     override fun exec(ctx: ExecutionContext, input: I)
 }
-
-
-
 
 abstract class BaseBlockingTask<I, O> : BlockingTask<I, O> {
     private val taskID = UUID.randomUUID()

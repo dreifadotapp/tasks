@@ -1,5 +1,7 @@
 package dreifa.app.tasks
 
+import java.lang.RuntimeException
+
 /**
  * Add documentation information to a Task.
  */
@@ -17,12 +19,18 @@ interface TaskDoc<I, O> {
 
 data class TaskDocInput<T>(val example: T, val description: String? = null)
 
-
+/**
+ * A single example
+ */
 class TaskExample<I, O>(
     private val description: String,
     private val input: TaskDocInput<I>? = null,
     private val output: O? = null
 ) {
+    init {
+        if (input == null && output == null) throw RuntimeException("Must specify at least an inout or an output")
+    }
+
     fun description(): String {
         return description
     }
@@ -37,7 +45,7 @@ class TaskExample<I, O>(
 }
 
 class TaskExamplesBuilder() {
-    private var examples = ArrayList<TaskExampleBuilder>()
+    private var examples = ArrayList<TaskExample<Any, Any>>()
 
     class TaskExampleBuilder(private val rootBuilder: TaskExamplesBuilder, private val description: String) {
         private var inputDescription: String? = null
@@ -59,26 +67,23 @@ class TaskExamplesBuilder() {
             return this
         }
 
-        fun done(): TaskExamplesBuilder {
-            return rootBuilder
-        }
+        fun done(): TaskExamplesBuilder = rootBuilder.example(this.build())
 
-        fun _build(): TaskExample<Any, Any> = TaskExample(
+        private fun build(): TaskExample<Any, Any> = TaskExample(
             description,
             TaskDocInput(input!!, inputDescription),
             output
         )
     }
 
+    fun example(description: String) = TaskExampleBuilder(this, description)
 
-    fun example(description: String): TaskExampleBuilder {
-        val exampleBuilder = TaskExampleBuilder(this, description)
-        this.examples.add(exampleBuilder)
-        return exampleBuilder
+    fun example(example: TaskExample<Any, Any>): TaskExamplesBuilder {
+        examples.add(example)
+        return this
     }
 
     fun <I, O> build(): List<TaskExample<I, O>> {
-        return this.examples.map { it._build() } as List<TaskExample<I, O>>
+        return this.examples as List<TaskExample<I, O>>
     }
-
 }

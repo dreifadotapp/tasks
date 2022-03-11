@@ -6,7 +6,6 @@ package dreifa.app.tasks
 interface TaskDocument<I, O> {
     fun description(): String
     fun examples(): List<TaskExample<I, O>>
-
 }
 
 interface TaskExampleData<T> {

@@ -6,6 +6,7 @@ import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.TaskFactory
 import dreifa.app.registry.Registry
 import dreifa.app.sis.JsonSerialiser
+import dreifa.app.tasks.executionContext.PipelineContext
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.tasks.logging.*
 import dreifa.app.types.UniqueId
@@ -35,6 +36,7 @@ class NotAuthenticatedSecurityPrinciple(val userName: String = "unknown") : Secu
  * The information that any client must provide
  */
 interface ClientContext {
+
     /**
      * One of the security principles
      */
@@ -45,10 +47,8 @@ interface ClientContext {
      */
     fun logChannelLocator(): LoggingChannelLocator
 
-    /**
-     * Web Request style custom headers. Should be used with care (is this a good idea?)
-     */
-    fun customHeaders(): Map<String, String>
+    fun pipleline(): PipelineContext
+
 }
 
 interface TaskClient {
@@ -77,8 +77,7 @@ class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocat
     private val principle = NotAuthenticatedSecurityPrinciple()
     override fun securityPrinciples(): Set<SecurityPrinciple> = setOf(principle)
     override fun logChannelLocator(): LoggingChannelLocator = loggingChannelLocator
-    override fun customHeaders(): Map<String, String> = emptyMap()
-
+    override fun pipleline(): PipelineContext = PipelineContext.DEFAULT
 }
 
 /**

@@ -41,7 +41,7 @@ interface ProvisioningState {
      * This problem has some subtleties. There is the distinction between a generic property (for example any server
      * provisioning stage should capture the public ip address) to the a platform specific output.
      */
-    fun outputs(stage: String): Map<String, Any>
+    //fun outputs(stage: String): Map<String, Any>
 
     fun stages(): List<String>
 
@@ -52,8 +52,6 @@ interface ProvisioningState {
      * Modify the tag
      */
     fun withTag(tag: String): ProvisioningState
-
-
 }
 
 class DefaultProvisioningState(
@@ -84,9 +82,9 @@ class DefaultProvisioningState(
         return tag
     }
 
-    override fun outputs(stage: String): Map<String, Any> {
-        return outputs.getOrDefault(stage, emptyMap())
-    }
+//    override fun outputs(stage: String): Map<String, Any> {
+//        return outputs.getOrDefault(stage, emptyMap())
+//    }
 
     override fun stages(): List<String> {
         return outputs.keys.sorted()
@@ -120,9 +118,9 @@ class DefaultProvisioningState(
         sb.append("stages:")
         stages().forEach {
             sb.append("  $it \n")
-            outputs(it).entries.forEach { entry ->
-                sb.append("    ${entry.key} = ${entry.value}\n")
-            }
+//            outputs(it).entries.forEach { entry ->
+//                sb.append("    ${entry.key} = ${entry.value}\n")
+//            }
         }
         sb.append("platforms:")
         platforms.forEach {

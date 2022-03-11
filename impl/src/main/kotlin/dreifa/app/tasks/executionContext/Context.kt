@@ -8,13 +8,19 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-
 /**
  * A standard context to pass around. It provides access to services and
  * information that are deferred until execution time, as they may
  * change on each run
  */
 interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
+
+    /**
+     * Typically a sequence of task is run in a "pipeline". The pipeline
+     * context holds the logical identifier. This is used as the key to lookup any
+     * state information that has supplied by earlier tasks
+     */
+    fun pipeline(): PipelineContext
 
     /**
      *  One single place for running and checking the status of processes.
@@ -46,10 +52,6 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
 
     fun taskId(): UUID?
 
-    /**
-     * Provisioning state
-     */
-    fun provisioningState(): ProvisioningState
 
     /**
      * Instance qualifier - if multiple services are deployed to a server,
@@ -92,8 +94,6 @@ interface ExecutionContextModifier {
 
     fun withTaskId(task: Task): ExecutionContext = withTaskId(task.taskId())
 
-    fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext
-
     fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext
 
     fun withLoggingProducerContext(context: LoggingProducerContext): ExecutionContext
@@ -113,20 +113,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = taskId,
             executor = working.executorService(),
             pm = working.processManager(),
-            provisioningState = working.provisioningState(),
-            instanceQualifier = working.instanceQualifier()
-        )
-        return working
-    }
-
-    override fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext {
-        working = SimpleExecutionContext(
-            loggingProducerContext = working,
-            executionId = working.executionId(),
-            taskId = working.taskId(),
-            executor = working.executorService(),
-            pm = working.processManager(),
-            provisioningState = provisioningState,
             instanceQualifier = working.instanceQualifier()
         )
         return working
@@ -139,7 +125,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            provisioningState = working.provisioningState(),
             instanceQualifier = instanceQualifier
         )
         return working
@@ -152,7 +137,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            provisioningState = working.provisioningState(),
             instanceQualifier = working.instanceQualifier()
         )
         return working
@@ -166,7 +150,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            provisioningState = working.provisioningState(),
             instanceQualifier = working.instanceQualifier()
         )
         return working
@@ -184,36 +167,22 @@ class SimpleExecutionContext(
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager(),
-    private val provisioningState: ProvisioningState = DefaultProvisioningState()
+    private val pipeline: PipelineContext = PipelineContext.DEFAULT
 ) : ExecutionContext, ExecutionContextModifier {
 
-    override fun provisioningState(): ProvisioningState {
-        return provisioningState
-    }
+    override fun pipeline(): PipelineContext = pipeline
 
-    override fun processManager(): ProcessManager {
-        return pm
-    }
+    override fun processManager(): ProcessManager = pm
 
-    override fun executorService(): ExecutorService {
-        return executor
-    }
+    override fun executorService(): ExecutorService = executor
 
-    override fun executionId(): UUID {
-        return executionId
-    }
+    override fun executionId(): UUID = executionId
 
-    override fun taskId(): UUID? {
-        return taskId
-    }
+    override fun taskId(): UUID? = taskId
 
-    override fun instanceQualifier(): String? {
-        return instanceQualifier
-    }
+    override fun instanceQualifier(): String? = instanceQualifier
 
-    override fun logger(): LogMessageConsumer {
-        return loggingProducerContext.logger()
-    }
+    override fun logger(): LogMessageConsumer = loggingProducerContext.logger()
 
     override fun stdout() = loggingProducerContext.stdout()
 
@@ -221,10 +190,6 @@ class SimpleExecutionContext(
 
     override fun withTaskId(taskId: UUID): ExecutionContext {
         return DefaultExecutionContextModifier(this).withTaskId(taskId)
-    }
-
-    override fun withProvisioningState(provisioningState: ProvisioningState): ExecutionContext {
-        return DefaultExecutionContextModifier(this).withProvisioningState(provisioningState)
     }
 
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {

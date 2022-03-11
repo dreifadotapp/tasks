@@ -18,11 +18,9 @@ import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SimpleTaskClientTests : BaseTaskClientTest() {
-
     private val registry = Registry()
     private val taskFactory = TaskFactory().register(DemoTasks()).register(EchoTasks())
     private val logChannelFactory = DefaultLoggingChannelFactory(registry)
-
 
     init {
         registry.store(taskFactory).store(logChannelFactory)
@@ -49,12 +47,12 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
             SimpleTaskClient(registry).execBlocking(
                 clientContext,
                 "dreifa.app.tasks.demo.ExceptionGeneratingBlockingTask",
-                "opps",
+                "MyException",
                 String::class
             )
         }, throws<RuntimeException>())
 
-        assertPartialLogMessage(clientContext, "opps")
+        assertPartialLogMessage(clientContext, "MyException")
     }
 
     @Test
@@ -89,24 +87,6 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         assertThat(readerContext.stdout(), isEmptyString)
         assertThat(readerContext.stderr(), equalTo("Goodbye, cruel world\n"))
         assertThat(readerContext.messages(), isEmpty)
-    }
-
-    @Test
-    fun `should pass on exception to client`() {
-        val clientContext = SimpleClientContext()
-
-        try {
-            SimpleTaskClient(registry).execBlocking(
-                clientContext,
-                "dreifa.app.tasks.demo.ExceptionGeneratingBlockingTask",
-                "Opps",
-                String::class
-            )
-            fail("should have thrown a RuntimeException")
-        } catch (re: RuntimeException) {
-            re.printStackTrace()
-            assertThat(re.message, equalTo("Opps"))
-        }
     }
 
 }

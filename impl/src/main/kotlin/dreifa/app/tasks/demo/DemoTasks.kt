@@ -14,7 +14,6 @@ import java.util.*
  Some prebuilt demo tasks for tests and example
  */
 
-
 class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDoc<Int, Int> {
 
     override fun exec(ctx: ExecutionContext, input: Int): Int {
@@ -25,13 +24,13 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDoc<Int, Int> {
     }
 
     override fun description(): String {
-        return "An example task that calculates the square of a number"
+        return "An example task that calculates the square of a whole number"
     }
 
     override fun examples(): List<TaskExample<Int, Int>> {
         return listOf(
-            DefaultTaskExample(
-                "2 squared",
+            TaskExample(
+                "2 squared should return 4",
                 TaskDocInput(2, "The number to square"),
                 4
             )
@@ -40,13 +39,30 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDoc<Int, Int> {
 }
 
 
-class ExceptionGeneratingBlockingTask : BaseBlockingTask<String, String>() {
+class ExceptionGeneratingBlockingTask : BaseBlockingTask<String, String>(), TaskDoc<String, String> {
     override fun exec(ctx: ExecutionContext, input: String): String {
-        if (!input.contains("ignore", true)) {
+        if (input.contains("exception", true)) {
             throw RuntimeException(input)
         } else {
             return input
         }
+    }
+
+    override fun description(): String =
+        "Use this Task to generate exceptions. If the inout contains `exception` (case insensitive) then a " +
+                "RuntimeException is generated with the input as the message. Any other input is echoed in the output"
+
+    override fun examples(): List<TaskExample<String, String>> {
+        return TaskExamplesBuilder()
+            .example("Creates an exception")
+            .input("DemoException")
+            .inputDescription("must contain `exception`")
+            .done()
+            .example("Echoes the input")
+            .input("Hello World")
+            .output("Hello World")
+            .done()
+            .build()
     }
 }
 

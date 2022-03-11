@@ -15,7 +15,7 @@ import java.util.*
  */
 
 
-class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
+class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDoc<Int, Int> {
 
     override fun exec(ctx: ExecutionContext, input: Int): Int {
         // this is normally the first line - it ensures the task is stored in the context
@@ -25,16 +25,15 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDocument<Int, Int> {
     }
 
     override fun description(): String {
-        return "An example Task that calculates the square of a number"
+        return "An example task that calculates the square of a number"
     }
 
     override fun examples(): List<TaskExample<Int, Int>> {
-        val input = DefaultTaskExampleData<Int>(2)
-        val output = DefaultTaskExampleData<Int>(4)
         return listOf(
-            DefaultTaskExample<Int, Int>(
-                "two squared",
-                input, output
+            DefaultTaskExample(
+                "2 squared",
+                TaskDocInput(2, "The number to square"),
+                4
             )
         )
     }

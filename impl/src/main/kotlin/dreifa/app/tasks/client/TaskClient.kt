@@ -47,7 +47,10 @@ interface ClientContext {
      */
     fun logChannelLocator(): LoggingChannelLocator
 
-    fun pipleline(): PipelineContext
+    /**
+     * The pipeline this task is running in. 
+     */
+    fun pipelineContext(): PipelineContext
 
 }
 
@@ -77,7 +80,7 @@ class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocat
     private val principle = NotAuthenticatedSecurityPrinciple()
     override fun securityPrinciples(): Set<SecurityPrinciple> = setOf(principle)
     override fun logChannelLocator(): LoggingChannelLocator = loggingChannelLocator
-    override fun pipleline(): PipelineContext = PipelineContext.DEFAULT
+    override fun pipelineContext(): PipelineContext = PipelineContext.DEFAULT
 }
 
 /**

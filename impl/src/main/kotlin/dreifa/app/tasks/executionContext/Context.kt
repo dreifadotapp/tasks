@@ -20,7 +20,7 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
      * context holds the logical identifier. This is used as the key to lookup any
      * state information that has supplied by earlier tasks
      */
-    fun pipeline(): PipelineContext
+    fun pipelineContext(): PipelineContext
 
     /**
      *  One single place for running and checking the status of processes.
@@ -96,9 +96,11 @@ interface ExecutionContextModifier {
 
     fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext
 
-    fun withLoggingProducerContext(context: LoggingProducerContext): ExecutionContext
+    fun withLoggingProducerContext(newLoggingProducerContext: LoggingProducerContext): ExecutionContext
 
     fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext
+
+    fun withPipelineContext(newPipelineContext: PipelineContext) : ExecutionContext
 }
 
 /**
@@ -113,7 +115,8 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = taskId,
             executor = working.executorService(),
             pm = working.processManager(),
-            instanceQualifier = working.instanceQualifier()
+            instanceQualifier = working.instanceQualifier(),
+            pipelineContext = working.pipelineContext()
         )
         return working
     }
@@ -125,19 +128,21 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            instanceQualifier = instanceQualifier
+            instanceQualifier = instanceQualifier,
+            pipelineContext = working.pipelineContext()
         )
         return working
     }
 
-    override fun withLoggingProducerContext(context: LoggingProducerContext): ExecutionContext {
+    override fun withLoggingProducerContext(newLoggingProducerContext: LoggingProducerContext): ExecutionContext {
         working = SimpleExecutionContext(
-            loggingProducerContext = context,
+            loggingProducerContext = newLoggingProducerContext,
             executionId = working.executionId(),
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            instanceQualifier = working.instanceQualifier()
+            instanceQualifier = working.instanceQualifier(),
+            pipelineContext = working.pipelineContext()
         )
         return working
     }
@@ -150,7 +155,21 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            instanceQualifier = working.instanceQualifier()
+            instanceQualifier = working.instanceQualifier(),
+            pipelineContext = working.pipelineContext()
+        )
+        return working
+    }
+
+    override fun withPipelineContext(newPipelineContext: PipelineContext): ExecutionContext {
+        working = SimpleExecutionContext(
+            loggingProducerContext = working,
+            executionId = working.executionId(),
+            taskId = working.taskId(),
+            executor = working.executorService(),
+            pm = working.processManager(),
+            instanceQualifier = working.instanceQualifier(),
+            pipelineContext = newPipelineContext
         )
         return working
     }
@@ -167,10 +186,10 @@ class SimpleExecutionContext(
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager(),
-    private val pipeline: PipelineContext = PipelineContext.DEFAULT
+    private val pipelineContext: PipelineContext = PipelineContext.DEFAULT
 ) : ExecutionContext, ExecutionContextModifier {
 
-    override fun pipeline(): PipelineContext = pipeline
+    override fun pipelineContext(): PipelineContext = pipelineContext
 
     override fun processManager(): ProcessManager = pm
 
@@ -196,28 +215,32 @@ class SimpleExecutionContext(
         return DefaultExecutionContextModifier(this).withInstanceQualifier(instanceQualifier)
     }
 
-    override fun withLoggingProducerContext(context: LoggingProducerContext): ExecutionContext {
-        return DefaultExecutionContextModifier(this).withLoggingProducerContext(context)
+    override fun withLoggingProducerContext(newLoggingProducerContext: LoggingProducerContext): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withLoggingProducerContext(newLoggingProducerContext)
     }
 
     override fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext {
         return DefaultExecutionContextModifier(this).withInMemoryLogging(logging)
     }
+
+    override fun withPipelineContext(newPipelineContext: PipelineContext): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withPipelineContext(newPipelineContext)
+    }
 }
 
-
-interface ExecutionContextFactory {
-
-    /**
-     * Inject in the key context specific information here.
-     * Other values are overridden with the .withXXX methods
-     * on the built execution context.
-     */
-    fun get(
-        executionId: UUID = UUID.randomUUID(),
-        taskId: UUID? = null,
-        scoped: Registry = Registry(),
-        logMessageConsumer: LogMessageConsumer? = null
-
-    ): ExecutionContext
-}
+//
+//interface ExecutionContextFactory {
+//
+//    /**
+//     * Inject in the key context specific information here.
+//     * Other values are overridden with the .withXXX methods
+//     * on the built execution context.
+//     */
+//    fun get(
+//        executionId: UUID = UUID.randomUUID(),
+//        taskId: UUID? = null,
+//        scoped: Registry = Registry(),
+//        logMessageConsumer: LogMessageConsumer? = null
+//
+//    ): ExecutionContext
+//}

@@ -84,15 +84,45 @@ class EchoUUIDTask : BaseBlockingTask<UUID, UUID>() {
     }
 }
 
-class EchoStringListTask : BaseBlockingTask<StringList, StringList>() {
+class EchoStringListTask : BaseBlockingTask<StringList, StringList>(), TaskDoc<StringList, StringList> {
     override fun exec(ctx: ExecutionContext, input: StringList): StringList {
-        return input
+        return StringList(input.map { it.toUpperCase() })
+    }
+
+    override fun description(): String = "A simple task for demoing lists. The input list is echoed back in upper-case"
+
+    override fun examples(): List<TaskExample<StringList, StringList>> {
+        return TaskExamplesBuilder()
+            .example("A list of names")
+            .input(StringList(listOf("Alice", "Bob")))
+            .output(StringList(listOf("ALICE", "BOB")))
+            .done()
+            .build()
     }
 }
 
-class EchoDemoModelTask : BaseBlockingTask<DemoModel, DemoModel>() {
+class EchoDemoModelTask : BaseBlockingTask<DemoModel, DemoModel>(), TaskDoc<DemoModel, DemoModel> {
     override fun exec(ctx: ExecutionContext, input: DemoModel): DemoModel {
         return input
+    }
+
+    override fun description(): String =
+        "A simple task for demoing custom models. The input list is echoed back in the output"
+
+    override fun examples(): List<TaskExample<DemoModel, DemoModel>> {
+        val model = DemoModel()
+        val modelWithNesting = DemoModel(nested = model)
+
+        return TaskExamplesBuilder()
+            .example("Random DemoModel")
+            .input(model)
+            .output(model)
+            .done()
+            .example("Random DemoModel with nesting")
+            .input(modelWithNesting)
+            .output(modelWithNesting)
+            .done()
+            .build()
     }
 }
 

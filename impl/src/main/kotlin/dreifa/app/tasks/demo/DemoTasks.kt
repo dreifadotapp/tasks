@@ -180,7 +180,7 @@ class DemoTasks : SimpleTaskRegistrations(
         TaskRegistration(FileTask::class),
         TaskRegistration(UnitTask::class),
         TaskRegistration(PrintStreamTask::class),
-        TaskRegistration(NoDocsTask::class)
+        TaskRegistration(NoDocsTask::class),
     )
 )
 

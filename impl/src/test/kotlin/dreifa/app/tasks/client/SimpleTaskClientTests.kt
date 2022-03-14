@@ -1,18 +1,15 @@
 package dreifa.app.tasks.client
 
+import com.natpryce.hamkrest.*
 import com.natpryce.hamkrest.assertion.assertThat
-import com.natpryce.hamkrest.equalTo
-import com.natpryce.hamkrest.isEmpty
-import com.natpryce.hamkrest.isEmptyString
-import com.natpryce.hamkrest.throws
 import dreifa.app.tasks.TaskFactory
 import dreifa.app.registry.Registry
+import dreifa.app.tasks.demo.CalcSquareTask
 import dreifa.app.tasks.demo.DemoTasks
 import dreifa.app.tasks.demo.echo.EchoTasks
 import dreifa.app.tasks.logging.DefaultLoggingChannelFactory
 import dreifa.app.tasks.logging.LoggingChannelLocator
 import dreifa.app.tasks.logging.LoggingReaderContext
-import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -87,6 +84,38 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
         assertThat(readerContext.stdout(), isEmptyString)
         assertThat(readerContext.stderr(), equalTo("Goodbye, cruel world\n"))
         assertThat(readerContext.messages(), isEmpty)
+    }
+
+    @Test
+    fun `should return TaskDoc if implemented`() {
+        val clientContext = SimpleClientContext()
+        val result = SimpleTaskClient(registry).taskDocs<Int, Int>(
+            clientContext,
+            "dreifa.app.tasks.demo.CalcSquareTask"
+        )
+
+        val expectedDescription = CalcSquareTask.exampleDescription()
+        assertThat(result.description(), equalTo(expectedDescription))
+        val expectedExamples = CalcSquareTask.examplesFixture()
+        assertThat(result.examples(), equalTo(expectedExamples))
+    }
+
+    @Test
+    fun `should throw exception if TaskDoc not implemented`() {
+        val clientContext = SimpleClientContext()
+        assertThat(
+            {
+                SimpleTaskClient(registry).taskDocs<Any, Any>(
+                    clientContext,
+                    "dreifa.app.tasks.demo.NoDocsTask"
+                )
+            }, throws<RuntimeException>(
+                has(
+                    Exception::message,
+                    present(equalTo("No TaskDoc for task: dreifa.app.tasks.demo.NoDocsTask"))
+                )
+            )
+        )
     }
 
 }

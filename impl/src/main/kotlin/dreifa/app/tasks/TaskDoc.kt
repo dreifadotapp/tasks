@@ -17,12 +17,19 @@ interface TaskDoc<I, O> {
     fun examples(): List<TaskExample<I, O>>
 }
 
+data class TaskDocHolder<I, O>(private val description: String, private val examples: List<TaskExample<I, O>>) :
+    TaskDoc<I, O> {
+    override fun description(): String = description
+
+    override fun examples(): List<TaskExample<I, O>> = examples
+}
+
 data class TaskDocInput<T>(val example: T, val description: String? = null)
 
 /**
  * A single example
  */
-class TaskExample<I, O>(
+data class TaskExample<I, O>(
     private val description: String,
     private val input: TaskDocInput<I>? = null,
     private val output: O? = null

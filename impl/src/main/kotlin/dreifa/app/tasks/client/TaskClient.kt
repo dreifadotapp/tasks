@@ -1,15 +1,13 @@
 package dreifa.app.tasks.client
 
-import dreifa.app.tasks.AsyncResultChannelSinkLocator
-import dreifa.app.tasks.AsyncTask
-import dreifa.app.tasks.BlockingTask
-import dreifa.app.tasks.TaskFactory
 import dreifa.app.registry.Registry
 import dreifa.app.sis.JsonSerialiser
+import dreifa.app.tasks.*
 import dreifa.app.tasks.executionContext.PipelineContext
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.tasks.logging.*
 import dreifa.app.types.UniqueId
+import java.lang.RuntimeException
 import kotlin.reflect.KClass
 
 /**
@@ -48,7 +46,7 @@ interface ClientContext {
     fun logChannelLocator(): LoggingChannelLocator
 
     /**
-     * The pipeline this task is running in. 
+     * The pipeline this task is running in.
      */
     fun pipelineContext(): PipelineContext
 
@@ -70,6 +68,14 @@ interface TaskClient {
         input: I,
         outputClazz: KClass<O>  // need access to the output clazz for serialization
     )
+
+    /**
+     * Returns TaskDoc information if implemented, else throws a RuntimeException
+     */
+    fun <I : Any, O : Any> taskDocs(
+        ctx: ClientContext,
+        taskName: String
+    ): TaskDoc<I, O>
 }
 
 /**
@@ -150,4 +156,20 @@ class SimpleTaskClient(registry: Registry) : TaskClient {
 
         task.exec(executionContext, channelLocator, channelId, input)
     }
+
+    override fun <I : Any, O : Any> taskDocs(
+        ctx: ClientContext,
+        taskName: String
+    ): TaskDoc<I, O> {
+        val task = taskFactory.createInstance(taskName)
+        if (task is TaskDoc<*, *>) {
+            return TaskDocHolder<I, O>(
+                task.description(),
+                task.examples() as List<TaskExample<I, O>>
+            )
+        } else {
+            throw RuntimeException("No TaskDoc for task: ${taskName}")
+        }
+    }
+
 }

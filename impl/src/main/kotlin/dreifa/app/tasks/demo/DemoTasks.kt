@@ -23,18 +23,41 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDoc<Int, Int> {
         return input.times(input)
     }
 
-    override fun description(): String {
-        return "An example task that calculates the square of a whole number"
-    }
+    override fun description(): String = exampleDescription()
 
-    override fun examples(): List<TaskExample<Int, Int>> {
-        return listOf(
-            TaskExample(
-                "2 squared should return 4",
-                TaskDocInput(2, "The number to square"),
-                4
+    override fun examples(): List<TaskExample<Int, Int>> = examplesFixture()
+
+    companion object {
+        /**
+         * Pull examples into a fixture so that they can be easily used in Unit Test
+         * assertions
+         */
+        fun examplesFixture(): List<TaskExample<Int, Int>> {
+            // make sure all patters are included
+            return listOf(
+                TaskExample(
+                    "2 squared should return 4",
+                    TaskDocInput(2, "The number to square"),
+                    4
+                ),
+                TaskExample(
+                    "An example with no input description",
+                    TaskDocInput(2),
+                    4
+                ),
+                TaskExample(
+                    "An example with no output given. 2 should return ???",
+                    TaskDocInput(2, "The number to square")
+                ),
+                TaskExample(
+                    "An example with no input given. 4 is the result of ???",
+                    null,
+                    4
+                )
             )
-        )
+        }
+
+        fun exampleDescription() = "An example task that calculates the square of a whole number"
     }
 }
 
@@ -143,6 +166,11 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
     override fun taskId(): UUID = taskId
 }
 
+
+class NoDocsTask : BaseBlockingTask<String, String>() {
+    override fun exec(ctx: ExecutionContext, input: String) = input
+}
+
 // list of all demo tasks
 class DemoTasks : SimpleTaskRegistrations(
     listOf(
@@ -151,7 +179,8 @@ class DemoTasks : SimpleTaskRegistrations(
         TaskRegistration(ExceptionGeneratingBlockingTask::class),
         TaskRegistration(FileTask::class),
         TaskRegistration(UnitTask::class),
-        TaskRegistration(PrintStreamTask::class)
+        TaskRegistration(PrintStreamTask::class),
+        TaskRegistration(NoDocsTask::class)
     )
 )
 

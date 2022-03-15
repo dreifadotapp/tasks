@@ -28,7 +28,7 @@ class AsyncTaskDocExamples {
 
         // 2. setup a channel for the results
         val locator = AsyncResultChannelSinkLocator.LOCAL
-        val channelId = UniqueId.random()
+        val channelId = UniqueId.alphanumeric()
 
         // 3. setup the task
         val task = CalcSquareAsyncTask(reg)
@@ -73,7 +73,7 @@ class AsyncTaskDocExamples {
 
         // 4. setup a channel for the results
         val locator = AsyncResultChannelSinkLocator.LOCAL
-        val channelId = UniqueId.random()
+        val channelId = UniqueId.alphanumeric()
 
         // 5. call the client
         val logChannelLocator = LoggingChannelLocator.inMemory()

@@ -130,12 +130,12 @@ class SimpleTaskClient(registry: Registry) : TaskClient {
 
     private fun <I : Any> roundTripInput(input: I): I {
         @Suppress("UNCHECKED_CAST")
-        return serialiser.deserialiseData(serialiser.serialiseData(input)).any() as I
+        return serialiser.fromPacket(serialiser.toPacket(input)).any() as I
     }
 
     private fun <O : Any> roundTripOutput(output: O): O {
         @Suppress("UNCHECKED_CAST")
-        return serialiser.deserialiseData(serialiser.serialiseData(output)).any() as O
+        return serialiser.fromPacket(serialiser.toPacket(output)).any() as O
     }
 
     override fun <I : Any, O : Any> execAsync(
@@ -165,6 +165,7 @@ class SimpleTaskClient(registry: Registry) : TaskClient {
         if (task is TaskDoc<*, *>) {
             return TaskDocHolder<I, O>(
                 task.description(),
+                @Suppress("UNCHECKED_CAST")
                 task.examples() as List<TaskExample<I, O>>
             )
         } else {

@@ -91,6 +91,7 @@ class TaskExamplesBuilder() {
     }
 
     fun <I, O> build(): List<TaskExample<I, O>> {
+        @Suppress("UNCHECKED_CAST")
         return this.examples as List<TaskExample<I, O>>
     }
 }

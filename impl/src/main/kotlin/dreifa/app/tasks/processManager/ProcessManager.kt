@@ -14,7 +14,7 @@ class CaptureOutput {
 
     //@Synchronized
     fun messageSink(m: String) {
-        sb.appendln(m)
+        sb.appendLine(m)
     }
 
     //@Synchronized

@@ -42,7 +42,7 @@ class FBQueryTaskImpl(registry: Registry) : BaseBlockingTask<FBQueryParams, FBQu
     private fun queryById(bundleId: UniqueId): FBQueryResult {
         val query = AllOfQuery(
             listOf(
-                EventTypeQuery(eventType = FBUploadedEventFactory.eventType()),
+                EventTypeQuery(eventType = FBStoredEventFactory.eventType()),
                 AggregateIdQuery(aggregateId = bundleId.toString())
             )
         )
@@ -50,7 +50,7 @@ class FBQueryTaskImpl(registry: Registry) : BaseBlockingTask<FBQueryParams, FBQu
     }
 
     private fun queryAll(): FBQueryResult {
-        val query = EventTypeQuery(eventType = FBUploadedEventFactory.eventType())
+        val query = EventTypeQuery(eventType = FBStoredEventFactory.eventType())
         return runEventsQuery(query)
     }
 

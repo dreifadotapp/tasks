@@ -14,9 +14,9 @@ import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.types.Key
 
-interface FBUploadTask : BlockingTask<FileBundle, Unit>
+interface FBStoreTask : BlockingTask<FileBundle, Unit>
 
-object FBUploadedEventFactory : EventFactory {
+object FBStoredEventFactory : EventFactory {
     fun create(params: FileBundle): Event {
         return Event(
             type = eventType(),
@@ -25,10 +25,10 @@ object FBUploadedEventFactory : EventFactory {
         )
     }
 
-    override fun eventType(): String = "dreifa.app.tasks.inbuilt.fileBundle.FBUploaded"
+    override fun eventType(): String = "dreifa.app.tasks.inbuilt.fileBundle.FBStored"
 }
 
-class FBUploadTaskImpl(registry: Registry) : BaseBlockingTask<FileBundle, Unit>(), FBUploadTask {
+class FBStoreTaskImpl(registry: Registry) : BaseBlockingTask<FileBundle, Unit>(), FBStoreTask {
     private val ses = registry.get(EventStore::class.java)
     private val sks = registry.get(SKS::class.java)
 
@@ -43,7 +43,7 @@ class FBUploadTaskImpl(registry: Registry) : BaseBlockingTask<FileBundle, Unit>(
             SKSValueType.Text
         )
         sks.put(kv)
-        // store event
-        ses.store(FBUploadedEventFactory.create(input))
+        // store event - the bundle is only considered "committed" once the event is written
+        ses.store(FBStoredEventFactory.create(input))
     }
 }

@@ -2,6 +2,9 @@ package dreifa.app.tasks.inbuilt.fileBundle
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.has
+import com.natpryce.hamkrest.present
+import com.natpryce.hamkrest.throws
 import dreifa.app.fileBundle.FileBundle
 import dreifa.app.fileBundle.TextBundleItem
 import dreifa.app.fileBundle.builders.FileBundleBuilder
@@ -15,6 +18,7 @@ import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.types.Key
 import dreifa.app.types.UniqueId
 import org.junit.jupiter.api.Test
+import java.lang.RuntimeException
 
 class FBTasksTest {
 
@@ -26,7 +30,7 @@ class FBTasksTest {
         val bundle = Fixtures.helloWorldBundle()
 
         // 2. test
-        FBUploadTaskImpl(reg).exec(ctx, bundle)
+        FBStoreTaskImpl(reg).exec(ctx, bundle)
 
         // 3. verify
         val events = ses.read(EverythingQuery)
@@ -44,7 +48,7 @@ class FBTasksTest {
         val bundle1 = Fixtures.helloWorldBundle(UniqueId.fromString("001"), "Bundle1")
         val bundle2 = Fixtures.helloWorldBundle(UniqueId.fromString("002"), "Bundle2")
         val bundle3 = Fixtures.helloWorldBundle(UniqueId.fromString("003"), "bundleThree")
-        val uploadTask = FBUploadTaskImpl(reg)
+        val uploadTask = FBStoreTaskImpl(reg)
         val queryTask = FBQueryTaskImpl(reg)
         uploadTask.exec(ctx, bundle1)
         uploadTask.exec(ctx, bundle2)
@@ -84,6 +88,34 @@ class FBTasksTest {
         // 3. Query with all filters
         assertThat(queryTask.exec(ctx, FBQueryParams("001", "Bundle%")).size, equalTo(1))
         assertThat(queryTask.exec(ctx, FBQueryParams("003", "Bundle%")).size, equalTo(0))
+    }
+
+    @Test
+    fun `should retrieve stored bundle`() {
+        // 1. setup
+        val (reg, ses, sks) = setupRegistry()
+        val ctx = SimpleExecutionContext()
+        val bundle = Fixtures.helloWorldBundle()
+
+        // 2. test
+        FBStoreTaskImpl(reg).exec(ctx, bundle)
+
+        // 3. verify can read
+        val retrievedBundle = FBRetrieveTaskImpl(reg).exec(ctx,bundle.id)
+        assertThat(retrievedBundle, equalTo(bundle))
+
+        // 3. verify missing bundle
+        val randomId = UniqueId.randomUUID()
+        assertThat(
+            { FBRetrieveTaskImpl(reg).exec(ctx, randomId) },
+            throws<RuntimeException>(
+                has(
+                    Exception::message,
+                    present(equalTo("No FileBundle for id:$randomId"))
+                )
+            )
+        )
+
     }
 
     private fun setupRegistry(): Triple<Registry, EventStore, SKS> {

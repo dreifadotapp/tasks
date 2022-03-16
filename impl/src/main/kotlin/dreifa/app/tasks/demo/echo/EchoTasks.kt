@@ -202,6 +202,17 @@ class EchoStringAsyncTask(registry: Registry) : BaseEchoAsyncTask<String, String
     }
 }
 
+class EchoToConsoleTask : BlockingTask<String, Unit> {
+    private val taskId = UUID.randomUUID()
+    override fun taskId(): UUID {
+        return taskId
+    }
+
+    override fun exec(ctx: ExecutionContext, input: String): Unit {
+        ctx.stdout().println(input)
+    }
+}
+
 // list of all echo tasks
 class EchoTasks : SimpleTaskRegistrations(
     listOf(
@@ -220,7 +231,8 @@ class EchoTasks : SimpleTaskRegistrations(
         TaskRegistration(EchoStringListTask::class),
         TaskRegistration(EchoToStdOutTask::class),
         TaskRegistration(EchoToStdErrTask::class),
-        TaskRegistration(EchoToLogTask::class)
+        TaskRegistration(EchoToLogTask::class),
+        TaskRegistration(EchoToConsoleTask::class)
     )
 )
 

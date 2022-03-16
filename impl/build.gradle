@@ -3,7 +3,10 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
 
-    // Jackson for JSON and YAML
+    implementation "io.github.classgraph:classgraph:$classgraphVersion"
+
+
+    // Jackson for JSON and YAM
     //implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     //implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
 

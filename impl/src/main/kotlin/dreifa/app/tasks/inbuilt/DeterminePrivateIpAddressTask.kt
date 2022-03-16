@@ -55,7 +55,6 @@ class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
         return localIP
     }
 
-
     // using plain old java code to minimise 3rd party deps
     private fun doRequest(targetURL: String): RequestResult {
         try {
@@ -101,7 +100,6 @@ class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
     }
 
     private fun isLaptop(): Boolean {
-
         val osName = System.getProperties().getProperty("os.name").toLowerCase()
         if (osName.contains("mac")) return true
         if (osName.contains("win")) return true

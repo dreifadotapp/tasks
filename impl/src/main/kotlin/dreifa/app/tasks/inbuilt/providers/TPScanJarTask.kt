@@ -16,8 +16,15 @@ import java.lang.RuntimeException
 import java.net.URL
 import java.net.URLClassLoader
 
-data class TPScanJarRequest(val bundleId: UniqueId) {
-    constructor(bundleId: String) : this(UniqueId.fromString(bundleId))
+data class TPScanJarRequest(
+    val bundleId: UniqueId,
+    val packageNames: StringList = StringList(emptyList())
+) {
+    constructor(bundleId: String, packageNames: List<String> = emptyList()) : this(
+        UniqueId.fromString(
+            bundleId
+        ), StringList(packageNames)
+    )
 }
 
 interface TPScanJarTask : BlockingTask<TPScanJarRequest, StringList>
@@ -33,19 +40,19 @@ class TPScanJarTaskImpl(reg: Registry) : BaseBlockingTask<TPScanJarRequest, Stri
 
         val tmpDir = tempDir(input)
         val bundleAdapter = FilesAdapter(tmpDir)
-        val files = bundleAdapter.fromBundle(bundle)
-        files.forEach { println(it) }
+        bundleAdapter.fromBundle(bundle)
 
         val url = URL("file:$tmpDir/${bundle.items[0].path}")
-
         val loader = URLClassLoader(listOf(url).toTypedArray())
-        val graph = ClassGraph()
+        val builder = ClassGraph()
             .enableAllInfo()
             .enableRemoteJarScanning()
-            .acceptPackages("dreifa.app")
             .addClassLoader(loader)
-            .scan()
+        if (input.packageNames.isNotEmpty()) {
+            builder.acceptPackages(*input.packageNames.toTypedArray())
+        }
 
+        val graph = builder.scan()
         val registrations: ClassInfoList = graph.getClassesImplementing("dreifa.app.tasks.TaskRegistrations")
         val result = registrations
             .filter { it.classpathElementURL == url }

@@ -20,18 +20,25 @@ import org.junit.jupiter.api.Test
 class TPTasksTest {
 
     @Test
-    fun `should scan jar `() {
+    fun `should scan jar`() {
         // 1. setup
         val (reg, ses, sks) = setupRegistry()
         val ctx = SimpleExecutionContext()
         val bundle = Fixtures.terraformTaskJar()
+        val bundleId = bundle.id.toString()
         FBStoreTaskImpl(reg).exec(ctx, bundle)
 
-        // Scan the uploaded Jar
-        val request = TPScanJarRequest(bundle.id)
-        val result = TPScanJarTaskImpl(reg).exec(ctx, request)
+        // 2a. Scan the uploaded Jar with no package filter
+        val resultA = TPScanJarTaskImpl(reg).exec(ctx, TPScanJarRequest(bundleId))
+        assertThat(resultA, equalTo(StringList(listOf("dreifa.app.terraform.tasks.TFTasks"))))
 
-        assertThat(result, equalTo(StringList(listOf("dreifa.app.terraform.tasks.TFTasks"))))
+        // 2b. Scan the uploaded Jar with package filter
+        val resultB = TPScanJarTaskImpl(reg).exec(ctx, TPScanJarRequest(bundleId, listOf("dreifa.app")))
+        assertThat(resultB, equalTo(StringList(listOf("dreifa.app.terraform.tasks.TFTasks"))))
+
+        // 2c. Scan the uploaded Jar with bad package filter
+        val resultC = TPScanJarTaskImpl(reg).exec(ctx, TPScanJarRequest(bundleId, listOf("not.exist")))
+        assert(resultC.isEmpty())
     }
 
 

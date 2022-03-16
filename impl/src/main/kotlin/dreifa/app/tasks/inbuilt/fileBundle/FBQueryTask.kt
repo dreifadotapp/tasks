@@ -36,7 +36,7 @@ class FBQueryTaskImpl(registry: Registry) : BaseBlockingTask<FBQueryParams, FBQu
         if (input.bundleId != null) return queryById(input.bundleId)
         if (input.nameIsLike != null) return queryByName(input.nameIsLike)
         if (input.bundleId == null && input.nameIsLike == null) return queryAll()
-        throw RuntimeException("Opps, unknown a query combination: $input")
+        throw RuntimeException("Opps, unknown query combination: $input")
     }
 
     private fun queryById(bundleId: UniqueId): FBQueryResult {
@@ -61,14 +61,7 @@ class FBQueryTaskImpl(registry: Registry) : BaseBlockingTask<FBQueryParams, FBQu
     }
 
     private fun runEventsQuery(query: EventQuery): FBQueryResult {
-        val items = ses.read(query).map {
-            FBQueryResultItem(UniqueId(it.aggregateId!!), it.payload as String)
-        }
+        val items = ses.read(query).map { FBQueryResultItem(it.aggregateId!!, it.payload as String) }
         return FBQueryResult(items)
     }
-}
-
-object Queries {
-
-
 }

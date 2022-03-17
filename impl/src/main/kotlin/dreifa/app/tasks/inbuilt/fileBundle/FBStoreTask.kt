@@ -14,7 +14,7 @@ import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.types.Key
 
-interface FBStoreTask : BlockingTask<FileBundle, Unit>
+interface FBStoreTask : BlockingTask<String, Unit>
 
 object FBStoredEventFactory : EventFactory {
     fun create(params: FileBundle): Event {
@@ -28,22 +28,22 @@ object FBStoredEventFactory : EventFactory {
     override fun eventType(): String = "dreifa.app.tasks.inbuilt.fileBundle.FBStored"
 }
 
-class FBStoreTaskImpl(registry: Registry) : BaseBlockingTask<FileBundle, Unit>(), FBStoreTask {
+class FBStoreTaskImpl(registry: Registry) : BaseBlockingTask<String, Unit>(), FBStoreTask {
     private val ses = registry.get(EventStore::class.java)
     private val sks = registry.get(SKS::class.java)
 
-    override fun exec(ctx: ExecutionContext, input: FileBundle) {
+    override fun exec(ctx: ExecutionContext, input: String) {
         val bundleAdapter = TextAdapter()
+        val bundle = bundleAdapter.toBundle(input)
 
         // store content in KV store
-        val text = bundleAdapter.fromBundle(input)
         val kv = SKSKeyValue(
-            Key.fromUniqueId(input.id),
-            text,
+            Key.fromUniqueId(bundle.id),
+            input,
             SKSValueType.Text
         )
         sks.put(kv)
         // store event - the bundle is only considered "committed" once the event is written
-        ses.store(FBStoredEventFactory.create(input))
+        ses.store(FBStoredEventFactory.create(bundle))
     }
 }

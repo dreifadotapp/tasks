@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import dreifa.app.fileBundle.BinaryBundleItem
 import dreifa.app.fileBundle.FileBundle
+import dreifa.app.fileBundle.adapters.TextAdapter
 import dreifa.app.fileBundle.builders.FileBundleBuilder
 import dreifa.app.registry.Registry
 import dreifa.app.ses.EventStore
@@ -18,6 +19,8 @@ import dreifa.app.types.UniqueId
 import org.junit.jupiter.api.Test
 
 class TPTasksTest {
+    private val adapter = TextAdapter()
+
 
     @Test
     fun `should scan jar`() {
@@ -26,7 +29,7 @@ class TPTasksTest {
         val ctx = SimpleExecutionContext()
         val bundle = Fixtures.terraformTaskJar()
         val bundleId = bundle.id.toString()
-        FBStoreTaskImpl(reg).exec(ctx, bundle)
+        FBStoreTaskImpl(reg).exec(ctx, adapter.fromBundle(bundle))
 
         // 2a. Scan the uploaded Jar with no package filter
         val resultA = TPScanJarTaskImpl(reg).exec(ctx, TPScanJarRequest(bundleId))

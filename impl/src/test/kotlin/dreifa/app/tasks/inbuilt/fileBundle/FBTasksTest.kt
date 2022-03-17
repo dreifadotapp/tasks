@@ -7,6 +7,7 @@ import com.natpryce.hamkrest.present
 import com.natpryce.hamkrest.throws
 import dreifa.app.fileBundle.FileBundle
 import dreifa.app.fileBundle.TextBundleItem
+import dreifa.app.fileBundle.adapters.TextAdapter
 import dreifa.app.fileBundle.builders.FileBundleBuilder
 import dreifa.app.registry.Registry
 import dreifa.app.ses.EventStore
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Test
 import java.lang.RuntimeException
 
 class FBTasksTest {
+    private val adapter = TextAdapter()
 
     @Test
     fun `should upload FileBundle`() {
@@ -29,8 +31,9 @@ class FBTasksTest {
         val ctx = SimpleExecutionContext()
         val bundle = Fixtures.helloWorldBundle()
 
+
         // 2. test
-        FBStoreTaskImpl(reg).exec(ctx, bundle)
+        FBStoreTaskImpl(reg).exec(ctx, adapter.fromBundle(bundle))
 
         // 3. verify
         val events = ses.read(EverythingQuery)
@@ -50,9 +53,9 @@ class FBTasksTest {
         val bundle3 = Fixtures.helloWorldBundle(UniqueId.fromString("003"), "bundleThree")
         val uploadTask = FBStoreTaskImpl(reg)
         val queryTask = FBQueryTaskImpl(reg)
-        uploadTask.exec(ctx, bundle1)
-        uploadTask.exec(ctx, bundle2)
-        uploadTask.exec(ctx, bundle3)
+        uploadTask.exec(ctx, adapter.fromBundle(bundle1))
+        uploadTask.exec(ctx, adapter.fromBundle(bundle2))
+        uploadTask.exec(ctx, adapter.fromBundle(bundle3))
 
         // 2. Query no filter
         assertThat(queryTask.exec(ctx, FBQueryParams()).size, equalTo(3))
@@ -98,10 +101,10 @@ class FBTasksTest {
         val bundle = Fixtures.helloWorldBundle()
 
         // 2. test
-        FBStoreTaskImpl(reg).exec(ctx, bundle)
+        FBStoreTaskImpl(reg).exec(ctx, adapter.fromBundle(bundle))
 
         // 3. verify can read
-        val retrievedBundle = FBRetrieveTaskImpl(reg).exec(ctx,bundle.id)
+        val retrievedBundle = adapter.toBundle(FBRetrieveTaskImpl(reg).exec(ctx, bundle.id))
         assertThat(retrievedBundle, equalTo(bundle))
 
         // 3. verify missing bundle
@@ -115,7 +118,6 @@ class FBTasksTest {
                 )
             )
         )
-
     }
 
     private fun setupRegistry(): Triple<Registry, EventStore, SKS> {

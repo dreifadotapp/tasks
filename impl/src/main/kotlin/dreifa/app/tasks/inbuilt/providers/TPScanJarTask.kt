@@ -1,6 +1,7 @@
 package dreifa.app.tasks.inbuilt.providers
 
 import dreifa.app.fileBundle.adapters.FilesAdapter
+import dreifa.app.fileBundle.adapters.TextAdapter
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.BaseBlockingTask
 import dreifa.app.tasks.BlockingTask
@@ -32,8 +33,9 @@ interface TPScanJarTask : BlockingTask<TPScanJarRequest, StringList>
 class TPScanJarTaskImpl(reg: Registry) : BaseBlockingTask<TPScanJarRequest, StringList>(), TPScanJarTask {
     private val retrieveBundleTask = FBRetrieveTaskImpl(reg)
     private val locations = reg.get(Locations::class.java)
+    private val adapter = TextAdapter()
     override fun exec(ctx: ExecutionContext, input: TPScanJarRequest): StringList {
-        val bundle = retrieveBundleTask.exec(ctx, input.bundleId)
+        val bundle = adapter.toBundle(retrieveBundleTask.exec(ctx, input.bundleId))
         if (bundle.items.size != 1) {
             throw RuntimeException("Expected one item in FileBundle(${input.bundleId}), found ${bundle.items.size}")
         }

@@ -1,7 +1,9 @@
 package dreifa.app.tasks.inbuilt.fileBundle
 
 import dreifa.app.fileBundle.FileBundle
+import dreifa.app.fileBundle.TextBundleItem
 import dreifa.app.fileBundle.adapters.TextAdapter
+import dreifa.app.fileBundle.builders.FileBundleBuilder
 import dreifa.app.registry.Registry
 import dreifa.app.ses.Event
 import dreifa.app.ses.EventFactory
@@ -9,12 +11,12 @@ import dreifa.app.ses.EventStore
 import dreifa.app.sks.SKS
 import dreifa.app.sks.SKSKeyValue
 import dreifa.app.sks.SKSValueType
-import dreifa.app.tasks.BaseBlockingTask
-import dreifa.app.tasks.BlockingTask
+import dreifa.app.tasks.*
 import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.types.Key
+import dreifa.app.types.UniqueId
 
-interface FBStoreTask : BlockingTask<String, Unit>
+interface FBStoreTask : BlockingTask<String, Unit>, TaskDoc<String, Unit>
 
 object FBStoredEventFactory : EventFactory {
     fun create(params: FileBundle): Event {
@@ -46,4 +48,26 @@ class FBStoreTaskImpl(registry: Registry) : BaseBlockingTask<String, Unit>(), FB
         // store event - the bundle is only considered "committed" once the event is written
         ses.store(FBStoredEventFactory.create(bundle))
     }
+
+    override fun description(): String = "This task stores a FileBundle. The FileBundle must be passed in its text " +
+            "format by using the `dreifa.app.fileBundle.adapters.TextAdapter` adapter"
+
+    override fun examples(): List<TaskExample<String, Unit>> {
+        return TaskExamplesBuilder()
+            .example("A simple FileBundle ")
+            .input(TextAdapter().fromBundle(Fixtures.helloWorldBundle()))
+            .done()
+            .build()
+    }
+
+    object Fixtures {
+        fun helloWorldBundle(): FileBundle {
+            return FileBundleBuilder()
+                .withName("hello-world-bundle")
+                .withId(UniqueId.randomUUID())
+                .addItem(TextBundleItem("greeting.txt", "Hello, world"))
+                .build()
+        }
+    }
+
 }

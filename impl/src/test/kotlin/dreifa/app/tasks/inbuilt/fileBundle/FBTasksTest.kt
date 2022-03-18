@@ -31,7 +31,6 @@ class FBTasksTest {
         val ctx = SimpleExecutionContext()
         val bundle = Fixtures.helloWorldBundle()
 
-
         // 2. test
         FBStoreTaskImpl(reg).exec(ctx, adapter.fromBundle(bundle))
 

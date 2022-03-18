@@ -28,6 +28,10 @@ data class TPScanJarRequest(
     )
 }
 
+/**
+ * A Task to scan a FileBundle with Jar file for any implementation   of `TaskRegistrations`
+ * The FileBundle must have been stored by calling the FBStoreTask request
+ */
 interface TPScanJarTask : BlockingTask<TPScanJarRequest, StringList>
 
 class TPScanJarTaskImpl(reg: Registry) : BaseBlockingTask<TPScanJarRequest, StringList>(), TPScanJarTask {

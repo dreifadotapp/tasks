@@ -7,8 +7,7 @@ import dreifa.app.fileBundle.FileBundle
 import dreifa.app.fileBundle.adapters.TextAdapter
 import dreifa.app.fileBundle.builders.FileBundleBuilder
 import dreifa.app.registry.Registry
-import dreifa.app.ses.EventStore
-import dreifa.app.ses.InMemoryEventStore
+import dreifa.app.ses.*
 import dreifa.app.sks.SKS
 import dreifa.app.sks.SimpleKVStore
 import dreifa.app.tasks.TestLocations
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.Test
 
 class TPTasksTest {
     private val adapter = TextAdapter()
-
 
     @Test
     fun `should scan jar`() {
@@ -42,6 +40,33 @@ class TPTasksTest {
         // 2c. Scan the uploaded Jar with bad package filter
         val resultC = TPScanJarTaskImpl(reg).exec(ctx, TPScanJarRequest(bundleId, listOf("not.exist")))
         assert(resultC.isEmpty())
+    }
+
+    @Test
+    fun `should register provider by generating an event`() {
+        // 1. Setup
+        val (reg, ses, sks) = setupRegistry()
+        val bundle = Fixtures.terraformTaskJar()
+        Pipelines.storeJar(reg, bundle)
+
+        // 2. Run Task
+        val ctx = SimpleExecutionContext()
+        val providerId = UniqueId.alphanumeric()
+        val request = TPRegisterProviderRequest(
+            bundle.id, providerId, "Example Provider"
+        )
+        TPRegisterProviderTaskImpl(reg).exec(ctx, request)
+
+        // 3. Check events
+        val query = AllOfQuery(
+            listOf(
+                EventTypeQuery(eventType = TPProviderRegisteredEventFactory.eventType()),
+                AggregateIdQuery(aggregateId = providerId.toString())
+            )
+        )
+
+        val events = ses.read(query)
+        assertThat(events.size, equalTo(1))
     }
 
 
@@ -67,5 +92,20 @@ class TPTasksTest {
                 .addItem(BinaryBundleItem.fromResource("/terraform-tasks.jar", "terraform-tasks.jar"))
                 .build()
         }
+    }
+
+    // some prebuilt pipelines to get the system into the correct state
+    object Pipelines {
+
+        fun storeJar(
+            reg: Registry,
+            bundle: FileBundle = Fixtures.terraformTaskJar()
+        ) {
+
+            val ctx = SimpleExecutionContext()
+            val adapter = TextAdapter()
+            FBStoreTaskImpl(reg).exec(ctx, adapter.fromBundle(bundle))
+        }
+
     }
 }

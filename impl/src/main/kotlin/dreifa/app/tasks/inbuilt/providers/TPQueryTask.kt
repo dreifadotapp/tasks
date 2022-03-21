@@ -41,10 +41,8 @@ class TPQueryTaskImpl(registry: Registry) : BaseBlockingTask<TPQueryParams, TPQu
 
     private fun queryById(providerId: UniqueId): TPQueryResult {
         val query = AllOfQuery(
-            listOf(
-                EventTypeQuery(eventType = TPProviderRegisteredEventFactory.eventType()),
-                AggregateIdQuery(aggregateId = providerId.toString())
-            )
+            EventTypeQuery(eventType = TPProviderRegisteredEventFactory.eventType()),
+            AggregateIdQuery(aggregateId = providerId.toString())
         )
         return runEventsQuery(query)
     }

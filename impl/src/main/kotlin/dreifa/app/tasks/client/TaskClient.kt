@@ -172,5 +172,4 @@ class SimpleTaskClient(registry: Registry) : TaskClient {
             throw RuntimeException("No TaskDoc for task: ${taskName}")
         }
     }
-
 }

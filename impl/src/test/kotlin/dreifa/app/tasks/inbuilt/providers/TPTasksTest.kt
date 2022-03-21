@@ -79,9 +79,7 @@ class TPTasksTest {
         Pipelines.registerProvider(reg, UniqueId.fromString("003"), "providerThree")
 
         val queryTask = TPQueryTaskImpl(reg)
-
-        val x = queryTask.exec(ctx, TPQueryParams())
-        println(x)
+        val infoTask = TPInfoTaskImpl(reg)
 
         // 2. Query no filter
         assertThat(queryTask.exec(ctx, TPQueryParams()).size, equalTo(3))
@@ -117,6 +115,26 @@ class TPTasksTest {
         // 3. Query with all filters
         assertThat(queryTask.exec(ctx, TPQueryParams("001", "Provider%")).size, equalTo(1))
         assertThat(queryTask.exec(ctx, TPQueryParams("003", "Provider%")).size, equalTo(0))
+    }
+
+    @Test
+    fun `should return info for registered providers`() {
+        // 1. setup
+        val (reg, _, _) = setupRegistry()
+        val bundle = Fixtures.terraformTaskJar()
+        Pipelines.registerProvider(
+            reg, UniqueId.fromString("001"),
+            "Provider1",
+            bundle
+        )
+
+        // 2. Get info back for a provider
+        val ctx = SimpleExecutionContext()
+        val infoTask = TPInfoTaskImpl(reg)
+        val info = infoTask.exec(ctx, UniqueId("001"))
+        assertThat(info.name, equalTo("Provider1"))
+        assertThat(info.providerId, equalTo(UniqueId("001")))
+        assertThat(info.jarBundleId, equalTo(bundle.id))
     }
 
 

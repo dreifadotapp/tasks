@@ -65,7 +65,7 @@ class TPQueryTaskImpl(registry: Registry) : BaseBlockingTask<TPQueryParams, TPQu
             .map {
                 TPQueryResultItem(
                     it.aggregateId!!,
-                    (it.payload as TPRegisterProviderRequest).providerName
+                    it.payloadAs(TPRegisterProviderRequest::class.java).providerName
                 )
             }
         return TPQueryResult(items)

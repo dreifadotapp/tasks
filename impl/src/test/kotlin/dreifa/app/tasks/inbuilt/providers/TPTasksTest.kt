@@ -69,6 +69,56 @@ class TPTasksTest {
         assertThat(events.size, equalTo(1))
     }
 
+    @Test
+    fun `should query for Task Providers`() {
+        // 1. setup
+        val (reg, _, _) = setupRegistry()
+        val ctx = SimpleExecutionContext()
+        Pipelines.registerProvider(reg, UniqueId.fromString("001"), "Provider1")
+        Pipelines.registerProvider(reg, UniqueId.fromString("002"), "Provider2")
+        Pipelines.registerProvider(reg, UniqueId.fromString("003"), "providerThree")
+
+        val queryTask = TPQueryTaskImpl(reg)
+
+        val x = queryTask.exec(ctx, TPQueryParams())
+        println(x)
+
+        // 2. Query no filter
+        assertThat(queryTask.exec(ctx, TPQueryParams()).size, equalTo(3))
+        assertThat(
+            queryTask.exec(ctx, TPQueryParams()),
+            equalTo(
+                TPQueryResult(
+                    listOf(
+                        TPQueryResultItem("001", "Provider1"),
+                        TPQueryResultItem("002", "Provider2"),
+                        TPQueryResultItem("003", "providerThree")
+                    )
+                )
+            )
+        )
+
+        // 3. Query with providerId filter
+        assertThat(queryTask.exec(ctx, TPQueryParams(providerId = UniqueId("002"))).size, equalTo(1))
+        assertThat(
+            queryTask.exec(ctx, TPQueryParams(providerId = UniqueId("002"))),
+            equalTo(
+                TPQueryResult(
+                    listOf(
+                        TPQueryResultItem("002", "Provider2"),
+                    )
+                )
+            )
+        )
+
+        // 3. Query with nameLike filter
+        assertThat(queryTask.exec(ctx, TPQueryParams(nameIsLike = "Provider%")).size, equalTo(2))
+
+        // 3. Query with all filters
+        assertThat(queryTask.exec(ctx, TPQueryParams("001", "Provider%")).size, equalTo(1))
+        assertThat(queryTask.exec(ctx, TPQueryParams("003", "Provider%")).size, equalTo(0))
+    }
+
 
     private fun setupRegistry(): Triple<Registry, EventStore, SKS> {
         val ses = InMemoryEventStore()
@@ -84,10 +134,11 @@ class TPTasksTest {
          * See https://github.com/dreifadotapp/terraform-tasks
          */
         fun terraformTaskJar(
-            id: UniqueId = UniqueId.randomUUID()
+            id: UniqueId = UniqueId.randomUUID(),
+            name: String = "Terraform Tasks"
         ): FileBundle {
             return FileBundleBuilder()
-                .withName("Terraform Tasks")
+                .withName(name)
                 .withId(id)
                 .addItem(BinaryBundleItem.fromResource("/terraform-tasks.jar", "terraform-tasks.jar"))
                 .build()
@@ -107,5 +158,20 @@ class TPTasksTest {
             FBStoreTaskImpl(reg).exec(ctx, adapter.fromBundle(bundle))
         }
 
+        fun registerProvider(
+            reg: Registry,
+            providerId: UniqueId = UniqueId.alphanumeric(),
+            providerName: String = "Provider-$providerId",
+            bundle: FileBundle = Fixtures.terraformTaskJar(),
+        ) {
+            storeJar(reg, bundle)
+            val ctx = SimpleExecutionContext()
+            val input = TPRegisterProviderRequest(
+                bundle.id,
+                providerId,
+                providerName
+            )
+            TPRegisterProviderTaskImpl(reg).exec(ctx, input)
+        }
     }
 }

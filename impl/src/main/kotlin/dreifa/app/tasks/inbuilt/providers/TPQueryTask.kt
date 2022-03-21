@@ -17,14 +17,14 @@ data class TPQueryParams(
 }
 
 data class TPQueryResultItem(val providerId: UniqueId, val name: String) {
-    constructor(bundleId: String, name: String) : this(UniqueId.fromString(bundleId), name)
+    constructor(providerId: String, name: String) : this(UniqueId.fromString(providerId), name)
 }
 
 class TPQueryResult(data: List<TPQueryResultItem>) : ArrayList<TPQueryResultItem>(data)
 
 interface TPQueryTask : BlockingTask<TPQueryParams, TPQueryResult>
 
-class FBQueryTaskImpl(registry: Registry) : BaseBlockingTask<TPQueryParams, TPQueryResult>(), TPQueryTask {
+class TPQueryTaskImpl(registry: Registry) : BaseBlockingTask<TPQueryParams, TPQueryResult>(), TPQueryTask {
     private val ses = registry.get(EventStore::class.java)
 
     override fun exec(ctx: ExecutionContext, input: TPQueryParams): TPQueryResult {
@@ -61,7 +61,13 @@ class FBQueryTaskImpl(registry: Registry) : BaseBlockingTask<TPQueryParams, TPQu
     }
 
     private fun runEventsQuery(query: EventQuery): TPQueryResult {
-        val items = ses.read(query).map { TPQueryResultItem(it.aggregateId!!, it.payload as String) }
+        val items = ses.read(query)
+            .map {
+                TPQueryResultItem(
+                    it.aggregateId!!,
+                    (it.payload as TPRegisterProviderRequest).providerName
+                )
+            }
         return TPQueryResult(items)
     }
 }

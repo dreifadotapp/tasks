@@ -11,6 +11,10 @@ import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.types.NotRequired
 import dreifa.app.types.UniqueId
 import org.junit.jupiter.api.Test
+import java.io.File
+import java.lang.RuntimeException
+import java.net.URL
+import java.net.URLClassLoader
 import java.util.*
 
 class TaskFactoryTest {
@@ -179,6 +183,27 @@ class TaskFactoryTest {
         assert(query.hasResult(channelId))
         assertThat(query.result<Int>(channelId) as Success<Int>, equalTo(Success(100)))
     }
+
+    @Test
+    fun `should load Tasks in custom classloader`() {
+        val clazzLoad = terraFormTasksClassLoader()
+        val taskFactory = TaskFactory(Registry(),clazzLoad)
+
+        taskFactory.register("dreifa.app.terraform.tasks.TFTasks")
+
+    }
+
+    private fun terraFormTasksClassLoader () : ClassLoader {
+        val x = File(".").canonicalPath
+        val jarFilePath = File(File("src/test/resources/terraform-tasks.jar").canonicalPath)
+        if (!jarFilePath.exists()) throw RuntimeException("opps")
+        val classLoader = URLClassLoader(
+            arrayOf<URL>(jarFilePath.toURI().toURL()),
+            this.javaClass.classLoader
+        )
+        return classLoader
+    }
+
 
     @Test
     // TODO - this test case doesn't really belong here, but currently the task client design \

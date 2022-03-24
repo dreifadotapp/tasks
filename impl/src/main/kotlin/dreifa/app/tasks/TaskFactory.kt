@@ -2,13 +2,16 @@ package  dreifa.app.tasks
 
 
 import dreifa.app.registry.Registry
-import java.lang.Exception
-import java.lang.RuntimeException
 import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.Method
+import java.util.Iterator
 import kotlin.reflect.KClass
 
 
-class TaskFactory(private val registry: Registry = Registry()) {
+class TaskFactory(
+    private val registry: Registry = Registry(),
+    private val clazzLoader: ClassLoader? = null
+) {
     private val lookup = HashMap<String, KClass<out Task>>()
 
     /**
@@ -16,6 +19,28 @@ class TaskFactory(private val registry: Registry = Registry()) {
      */
     fun register(taskRegistrations: TaskRegistrations): TaskFactory {
         taskRegistrations.forEach { register(it) }
+        return this
+    }
+
+    /**
+     * Register using a list of  TaskRegistrations
+     */
+    fun register(taskRegistrationsClazzName: String): TaskFactory {
+
+        val x = Class.forName(taskRegistrationsClazzName, true, clazzLoader);
+        println(x)
+
+        x.methods.forEach { println(it) }
+
+        val method = x.methods.filter { it.name == "iterator" }.single()
+
+        val instance: Any = x.getDeclaredConstructor().newInstance()
+        //val method: Method = x.getDeclaredMethod("iterator")
+        val result = method.invoke(instance) as Iterator<Any>
+        while(result.hasNext()) {
+            println(result.next())
+        }
+        //taskRegistrations.forEach { register(it) }
         return this
     }
 
@@ -108,6 +133,10 @@ class TaskFactory(private val registry: Registry = Registry()) {
         } else {
             throw RuntimeException("${task::class.qualifiedName} is not an AsyncTask")
         }
+    }
+
+    fun activeClazzLoader() : ClassLoader {
+        return clazzLoader ?: this::class.java.classLoader
     }
 
 }

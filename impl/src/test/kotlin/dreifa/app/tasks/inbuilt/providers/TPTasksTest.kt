@@ -137,6 +137,18 @@ class TPTasksTest {
         assertThat(info.jarBundleId, equalTo(bundle.id))
     }
 
+    @Test
+    fun `should load TaskProvider`() {
+        val (reg, _, _) = setupRegistry()
+        val (providerId, bundleId) = Pipelines.registerProvider(reg)
+
+        // 2. Get info back for a provider
+        val ctx = SimpleExecutionContext()
+        val result = TPLoadProviderTaskImpl(reg).exec(ctx, providerId)
+
+        println(result)
+
+    }
 
     private fun setupRegistry(): Triple<Registry, EventStore, SKS> {
         val ses = InMemoryEventStore()
@@ -170,7 +182,6 @@ class TPTasksTest {
             reg: Registry,
             bundle: FileBundle = Fixtures.terraformTaskJar()
         ) {
-
             val ctx = SimpleExecutionContext()
             val adapter = TextAdapter()
             FBStoreTaskImpl(reg).exec(ctx, adapter.fromBundle(bundle))
@@ -179,9 +190,9 @@ class TPTasksTest {
         fun registerProvider(
             reg: Registry,
             providerId: UniqueId = UniqueId.alphanumeric(),
-            providerName: String = "Provider-$providerId",
+            providerName: String = "dreifa.app.terraform.tasks.TFTasks", // TODO - how to set this up better - it must a the name of class in the bundle
             bundle: FileBundle = Fixtures.terraformTaskJar(),
-        ) {
+        ): Pair<UniqueId, UniqueId> {
             storeJar(reg, bundle)
             val ctx = SimpleExecutionContext()
             val input = TPRegisterProviderRequest(
@@ -190,6 +201,7 @@ class TPTasksTest {
                 providerName
             )
             TPRegisterProviderTaskImpl(reg).exec(ctx, input)
+            return Pair(providerId, bundle.id)
         }
     }
 }

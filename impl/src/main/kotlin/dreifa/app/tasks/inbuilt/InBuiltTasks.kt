@@ -16,7 +16,7 @@ class InBuiltTasks : SimpleTaskRegistrations(
         TaskRegistration(TPScanJarTaskImpl::class, TPScanJarTask::class),
         TaskRegistration(TPRegisterProviderTaskImpl::class, TPRegisterProviderTask::class),
         TaskRegistration(TPQueryTaskImpl::class, TPQueryTask::class),
-        TaskRegistration(TPInfoTaskImpl::class, TPInfoTask::class),
+        TaskRegistration(TPInfoTaskImpl::class, TPLoadProviderTask::class),
 
         // Networking
         TaskRegistration(DeterminePrivateIpAddressTaskImpl::class, DeterminePrivateIpAddressTask::class),

@@ -13,7 +13,6 @@ import dreifa.app.types.UniqueId
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.lang.RuntimeException
-import java.net.URL
 import java.net.URLClassLoader
 import java.util.*
 
@@ -186,22 +185,37 @@ class TaskFactoryTest {
 
     @Test
     fun `should load Tasks in custom classloader`() {
-        val clazzLoad = terraFormTasksClassLoader()
-        val taskFactory = TaskFactory(Registry(),clazzLoad)
+        val clazzLoader = terraFormTasksClassLoader()
+        val factory = TaskFactory(Registry(), clazzLoader)
 
-        taskFactory.register("dreifa.app.terraform.tasks.TFTasks")
+        factory.register("dreifa.app.terraform.tasks.TFTasks")
+        assertThat(factory.list(), !isEmpty)
+
+        val echoTask = factory.createInstance("dreifa.app.terraform.tasks.TFEchoTask") as BlockingTask<String, String>
+        val result = echoTask.exec(SimpleExecutionContext(), "Foo")
+        assertThat(result, equalTo("foo"))
+    }
+
+    @Test
+    fun `should throw exception if custom classloader not provided`() {
+        val clazzLoader = null
+        val factory = TaskFactory(Registry(), clazzLoader)
+
+        assertThat(
+            { factory.register("dreifa.app.terraform.tasks.TFTasks") },
+            throws<TaskException>(
+            )
+        )
 
     }
 
-    private fun terraFormTasksClassLoader () : ClassLoader {
-        val x = File(".").canonicalPath
+    private fun terraFormTasksClassLoader(): ClassLoader {
         val jarFilePath = File(File("src/test/resources/terraform-tasks.jar").canonicalPath)
         if (!jarFilePath.exists()) throw RuntimeException("opps")
-        val classLoader = URLClassLoader(
-            arrayOf<URL>(jarFilePath.toURI().toURL()),
-            this.javaClass.classLoader
+        return URLClassLoader(
+            arrayOf(jarFilePath.toURI().toURL()),
+            javaClass.classLoader
         )
-        return classLoader
     }
 
 

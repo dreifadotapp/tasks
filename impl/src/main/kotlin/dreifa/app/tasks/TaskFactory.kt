@@ -3,10 +3,8 @@ package  dreifa.app.tasks
 
 import dreifa.app.registry.Registry
 import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Method
 import java.util.Iterator
 import kotlin.reflect.KClass
-
 
 class TaskFactory(
     private val registry: Registry = Registry(),
@@ -26,22 +24,22 @@ class TaskFactory(
      * Register using a list of  TaskRegistrations
      */
     fun register(taskRegistrationsClazzName: String): TaskFactory {
-
-        val x = Class.forName(taskRegistrationsClazzName, true, clazzLoader);
-        println(x)
-
-        x.methods.forEach { println(it) }
-
-        val method = x.methods.filter { it.name == "iterator" }.single()
-
-        val instance: Any = x.getDeclaredConstructor().newInstance()
-        //val method: Method = x.getDeclaredMethod("iterator")
-        val result = method.invoke(instance) as Iterator<Any>
-        while(result.hasNext()) {
-            println(result.next())
+        try {
+            val clazz = Class.forName(taskRegistrationsClazzName, true, activeClazzLoader());
+            val method = clazz.methods.single { it.name == "iterator" }
+            val instance: Any = clazz.getDeclaredConstructor().newInstance()
+            val iterator = method.invoke(instance) as Iterator<Any>
+            while (iterator.hasNext()) {
+                val registration = iterator.next()
+                if (registration is TaskRegistration) {
+                    register(registration)
+                }
+            }
+            return this
+        } catch (cnfe: ClassNotFoundException) {
+            throw TaskException("taskRegistrations `$taskRegistrationsClazzName` not found." +
+                    "\n.Is the name correct?\nIs a JAR classloader needed?")
         }
-        //taskRegistrations.forEach { register(it) }
-        return this
     }
 
     /**
@@ -135,7 +133,7 @@ class TaskFactory(
         }
     }
 
-    fun activeClazzLoader() : ClassLoader {
+    fun activeClazzLoader(): ClassLoader {
         return clazzLoader ?: this::class.java.classLoader
     }
 

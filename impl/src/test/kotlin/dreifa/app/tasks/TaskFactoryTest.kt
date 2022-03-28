@@ -186,9 +186,9 @@ class TaskFactoryTest {
     @Test
     fun `should load Tasks in custom classloader`() {
         val clazzLoader = terraFormTasksClassLoader()
-        val factory = TaskFactory(Registry(), clazzLoader)
+        val factory = TaskFactory(Registry())
 
-        factory.register("dreifa.app.terraform.tasks.TFTasks")
+        factory.register("dreifa.app.terraform.tasks.TFTasks", clazzLoader)
         assertThat(factory.list(), !isEmpty)
 
         val echoTask = factory.createInstance("dreifa.app.terraform.tasks.TFEchoTask") as BlockingTask<String, String>
@@ -198,16 +198,22 @@ class TaskFactoryTest {
 
     @Test
     fun `should throw exception if custom classloader not provided`() {
-        val clazzLoader = null
-        val factory = TaskFactory(Registry(), clazzLoader)
+        val factory = TaskFactory(Registry())
 
         assertThat(
+            // should fail as TFTasks are not in the default classpath
             { factory.register("dreifa.app.terraform.tasks.TFTasks") },
             throws<TaskException>(
+                has(
+                    Exception::message,
+                    present(equalTo("taskRegistrations `dreifa.app.terraform.tasks.TFTasks` not found.\n" +
+                            ".Is the name correct?\n" +
+                            "Is a JAR classloader needed?"))
+                )
             )
         )
-
     }
+
 
     private fun terraFormTasksClassLoader(): ClassLoader {
         val jarFilePath = File(File("src/test/resources/terraform-tasks.jar").canonicalPath)

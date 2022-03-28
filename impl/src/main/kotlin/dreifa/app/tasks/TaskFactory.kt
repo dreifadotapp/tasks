@@ -1,14 +1,12 @@
 package  dreifa.app.tasks
 
-
 import dreifa.app.registry.Registry
 import java.lang.reflect.InvocationTargetException
 import java.util.Iterator
 import kotlin.reflect.KClass
 
 class TaskFactory(
-    private val registry: Registry = Registry(),
-    private val clazzLoader: ClassLoader? = null
+    private val registry: Registry = Registry()
 ) {
     private val lookup = HashMap<String, KClass<out Task>>()
 
@@ -21,11 +19,15 @@ class TaskFactory(
     }
 
     /**
-     * Register using a list of  TaskRegistrations
+     * Register using dynamically loaded JAR(s). In this case a custom classloader
+     * for the JAR files may be needed
      */
-    fun register(taskRegistrationsClazzName: String): TaskFactory {
+    fun register(
+        taskRegistrationsClazzName: String,
+        clazzLoader: ClassLoader = this::class.java.classLoader
+    ): TaskFactory {
         try {
-            val clazz = Class.forName(taskRegistrationsClazzName, true, activeClazzLoader());
+            val clazz = Class.forName(taskRegistrationsClazzName, true, clazzLoader);
             val method = clazz.methods.single { it.name == "iterator" }
             val instance: Any = clazz.getDeclaredConstructor().newInstance()
             val iterator = method.invoke(instance) as Iterator<Any>
@@ -37,8 +39,10 @@ class TaskFactory(
             }
             return this
         } catch (cnfe: ClassNotFoundException) {
-            throw TaskException("taskRegistrations `$taskRegistrationsClazzName` not found." +
-                    "\n.Is the name correct?\nIs a JAR classloader needed?")
+            throw TaskException(
+                "taskRegistrations `$taskRegistrationsClazzName` not found." +
+                        "\n.Is the name correct?\nIs a JAR classloader needed?"
+            )
         }
     }
 
@@ -132,9 +136,4 @@ class TaskFactory(
             throw RuntimeException("${task::class.qualifiedName} is not an AsyncTask")
         }
     }
-
-    fun activeClazzLoader(): ClassLoader {
-        return clazzLoader ?: this::class.java.classLoader
-    }
-
 }

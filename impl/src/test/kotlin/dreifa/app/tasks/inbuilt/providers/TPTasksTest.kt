@@ -53,7 +53,8 @@ class TPTasksTest {
         val ctx = SimpleExecutionContext()
         val providerId = UniqueId.alphanumeric()
         val request = TPRegisterProviderRequest(
-            bundle.id, providerId, "Example Provider"
+            bundle.id, providerId, "com.example.Provider",
+            "Example Provider"
         )
         TPRegisterProviderTaskImpl(reg).exec(ctx, request)
 
@@ -74,9 +75,9 @@ class TPTasksTest {
         // 1. setup
         val (reg, _, _) = setupRegistry()
         val ctx = SimpleExecutionContext()
-        Pipelines.registerProvider(reg, UniqueId.fromString("001"), "Provider1")
-        Pipelines.registerProvider(reg, UniqueId.fromString("002"), "Provider2")
-        Pipelines.registerProvider(reg, UniqueId.fromString("003"), "providerThree")
+        Pipelines.registerProvider(reg, UniqueId.fromString("001"), "com.example.Provider1", "Provider1")
+        Pipelines.registerProvider(reg, UniqueId.fromString("002"), "com.example.Provider2", "Provider2")
+        Pipelines.registerProvider(reg, UniqueId.fromString("003"), "com.example.Provider3", "providerThree")
 
         val queryTask = TPQueryTaskImpl(reg)
         val infoTask = TPInfoTaskImpl(reg)
@@ -88,9 +89,9 @@ class TPTasksTest {
             equalTo(
                 TPQueryResult(
                     listOf(
-                        TPQueryResultItem("001", "Provider1"),
-                        TPQueryResultItem("002", "Provider2"),
-                        TPQueryResultItem("003", "providerThree")
+                        TPQueryResultItem("001", "com.example.Provider1", "Provider1"),
+                        TPQueryResultItem("002", "com.example.Provider2", "Provider2"),
+                        TPQueryResultItem("003", "com.example.Provider3", "providerThree")
                     )
                 )
             )
@@ -103,7 +104,7 @@ class TPTasksTest {
             equalTo(
                 TPQueryResult(
                     listOf(
-                        TPQueryResultItem("002", "Provider2"),
+                        TPQueryResultItem("002", "com.example.Provider2", "Provider2"),
                     )
                 )
             )
@@ -124,6 +125,7 @@ class TPTasksTest {
         val bundle = Fixtures.terraformTaskJar()
         Pipelines.registerProvider(
             reg, UniqueId.fromString("001"),
+            "com.example.Provider1",
             "Provider1",
             bundle
         )
@@ -132,7 +134,7 @@ class TPTasksTest {
         val ctx = SimpleExecutionContext()
         val infoTask = TPInfoTaskImpl(reg)
         val info = infoTask.exec(ctx, UniqueId("001"))
-        assertThat(info.name, equalTo("Provider1"))
+        assertThat(info.providerClazz, equalTo("com.example.Provider1"))
         assertThat(info.providerId, equalTo(UniqueId("001")))
         assertThat(info.jarBundleId, equalTo(bundle.id))
     }
@@ -190,15 +192,17 @@ class TPTasksTest {
         fun registerProvider(
             reg: Registry,
             providerId: UniqueId = UniqueId.alphanumeric(),
-            providerName: String = "dreifa.app.terraform.tasks.TFTasks", // TODO - how to set this up better - it must a the name of class in the bundle
+            providerClazz: String = "com.example.Tasks", // TODO - how to set this up better - it must a the name of class in the bundle
+            providerName: String = "Example Tasks", // TODO - how to set this up better - it must a the name of class in the bundle
             bundle: FileBundle = Fixtures.terraformTaskJar(),
         ): Pair<UniqueId, UniqueId> {
             storeJar(reg, bundle)
             val ctx = SimpleExecutionContext()
             val input = TPRegisterProviderRequest(
-                bundle.id,
-                providerId,
-                providerName
+                jarBundleId = bundle.id,
+                providerId = providerId,
+                providerClazz = providerClazz,
+                providerName = providerName
             )
             TPRegisterProviderTaskImpl(reg).exec(ctx, input)
             return Pair(providerId, bundle.id)

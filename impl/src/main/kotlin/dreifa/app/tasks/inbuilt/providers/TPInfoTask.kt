@@ -9,9 +9,10 @@ import dreifa.app.types.UniqueId
 import java.lang.RuntimeException
 
 data class TPInfoResult(
-    val providerId: UniqueId,
     val jarBundleId: UniqueId,
-    val name: String
+    val providerId: UniqueId,
+    val providerClazz: String,
+    val providerName: String
 )
 
 interface TPInfoTask : BlockingTask<UniqueId, TPInfoResult>
@@ -30,7 +31,12 @@ class TPInfoTaskImpl(registry: Registry) : BaseBlockingTask<UniqueId, TPInfoResu
         )
         ses.read(query).lastOrNull()?.let {
             val payload = it.payloadAs(TPRegisterProviderRequest::class.java)
-            return TPInfoResult(payload.providerId, payload.jarBundleId, payload.providerName)
+            return TPInfoResult(
+                jarBundleId = payload.jarBundleId,
+                providerId = payload.providerId,
+                providerClazz = payload.providerClazz,
+                providerName = payload.providerName
+            )
         }
         throw RuntimeException("Not Found")
     }

@@ -49,7 +49,7 @@ class TPLoadProviderTaskImpl(private val reg: Registry) : BaseBlockingTask<Uniqu
 
 
         println(classLoader)
-        println(provider.name)
+        println(provider.providerClazz)
 
 
         return TPLoadProviderResult(provider.providerId)

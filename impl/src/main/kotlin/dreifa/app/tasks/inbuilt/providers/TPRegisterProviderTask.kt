@@ -11,8 +11,25 @@ import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.types.UniqueId
 
 data class TPRegisterProviderRequest(
+    /**
+     * The id of the FileBundle holding the JAR(s). Must have
+     * already been stored
+     */
     val jarBundleId: UniqueId,
+
+    /**
+     * The id of this provider
+     */
     val providerId: UniqueId,
+
+    /**
+     * The class name, i.e. the class that implements 'TaskRegistrations'
+     */
+    val providerClazz: String,
+
+    /**
+     * A human readable name, e.g. 'Google Cloud Compute Tasks'
+     */
     val providerName: String
 )
 

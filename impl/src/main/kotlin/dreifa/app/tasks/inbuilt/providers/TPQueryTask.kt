@@ -16,9 +16,14 @@ data class TPQueryParams(
     constructor(providerId: String, name: String) : this(UniqueId.fromString(providerId), name)
 }
 
-data class TPQueryResultItem(val providerId: UniqueId, val name: String) {
-    constructor(providerId: String, name: String) : this(UniqueId.fromString(providerId), name)
+data class TPQueryResultItem(val providerId: UniqueId, val providerClazz: String, val providerName: String) {
+    constructor(providerId: String, providerClazz: String, providerName: String) : this(
+        UniqueId.fromString(providerId),
+        providerClazz,
+        providerName
+    )
 }
+
 
 class TPQueryResult(data: List<TPQueryResultItem>) : ArrayList<TPQueryResultItem>(data)
 
@@ -31,7 +36,7 @@ class TPQueryTaskImpl(registry: Registry) : BaseBlockingTask<TPQueryParams, TPQu
         if (input.providerId != null && input.nameIsLike != null) {
             val id = queryById(input.providerId)
             val likeString = LikeString(input.nameIsLike)
-            return TPQueryResult(id.filter { likeString.matches(it.name) })
+            return TPQueryResult(id.filter { likeString.matches(it.providerName) })
         }
         if (input.providerId != null) return queryById(input.providerId)
         if (input.nameIsLike != null) return queryByName(input.nameIsLike)
@@ -55,15 +60,17 @@ class TPQueryTaskImpl(registry: Registry) : BaseBlockingTask<TPQueryParams, TPQu
     private fun queryByName(nameLike: String): TPQueryResult {
         val all = queryAll()
         val likeString = LikeString(nameLike)
-        return TPQueryResult(all.filter { likeString.matches(it.name) })
+        return TPQueryResult(all.filter { likeString.matches(it.providerName) })
     }
 
     private fun runEventsQuery(query: EventQuery): TPQueryResult {
         val items = ses.read(query)
             .map {
+                val payload = it.payloadAs(TPRegisterProviderRequest::class.java)
                 TPQueryResultItem(
-                    it.aggregateId!!,
-                    it.payloadAs(TPRegisterProviderRequest::class.java).providerName
+                    UniqueId.fromString(it.aggregateId!!),
+                    payload.providerClazz,
+                    payload.providerName
                 )
             }
         return TPQueryResult(items)

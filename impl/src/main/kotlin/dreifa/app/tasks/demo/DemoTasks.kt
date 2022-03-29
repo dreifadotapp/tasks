@@ -5,6 +5,7 @@ import dreifa.app.clock.PlatformTimer
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.tasks.logging.LogMessage
+import dreifa.app.types.NotRequired
 import dreifa.app.types.UniqueId
 import java.io.File
 import java.lang.RuntimeException
@@ -171,6 +172,16 @@ class NoDocsTask : BaseBlockingTask<String, String>() {
     override fun exec(ctx: ExecutionContext, input: String) = input
 }
 
+/**
+ * This can only be run locally, as File is not serialisable (it only makes
+ * sense to call it on the computer it ie being run on)
+ */
+class CannotRemoteTask : BaseBlockingTask<NotRequired, File>(), NotRemotableTask {
+    override fun exec(ctx: ExecutionContext, input: NotRequired): File {
+        return File(".")
+    }
+}
+
 // list of all demo tasks
 class DemoTasks : SimpleTaskRegistrations(
     listOf(
@@ -181,6 +192,7 @@ class DemoTasks : SimpleTaskRegistrations(
         TaskRegistration(UnitTask::class),
         TaskRegistration(PrintStreamTask::class),
         TaskRegistration(NoDocsTask::class),
+        TaskRegistration(CannotRemoteTask::class)
     )
 )
 

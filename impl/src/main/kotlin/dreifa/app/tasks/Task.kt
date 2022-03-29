@@ -15,12 +15,22 @@ interface Task {
     fun taskId(): UUID
 }
 
-// An marker interface to indicate that the Task is Idempotent, i.e. it is
-// safe to call it multiple times.
-//
-// Ideally any Task is Idempotent
-interface IdempotentTask {}
+/**
+ * A marker interface to indicate that the Task is Idempotent, i.e. it is
+ * safe to call it multiple times.
+ *
+ * Ideally any Task is Idempotent
+ **/
+interface IdempotentTask
 
+
+/**
+ * A marker to indicate that this Task cannot be remoted, i.e. it can
+ * only be run locally, not via a TaskClient. remotable
+ *
+ * This should be used sparingly.
+ */
+interface NotRemotableTask
 
 /**
  * A blocking task, i.e. one we can assume will either complete within a reasonable time or just

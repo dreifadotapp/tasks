@@ -2,6 +2,7 @@ package dreifa.app.tasks.inbuilt.providers
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.isEmpty
 import dreifa.app.fileBundle.BinaryBundleItem
 import dreifa.app.fileBundle.FileBundle
 import dreifa.app.fileBundle.adapters.TextAdapter
@@ -10,6 +11,7 @@ import dreifa.app.registry.Registry
 import dreifa.app.ses.*
 import dreifa.app.sks.SKS
 import dreifa.app.sks.SimpleKVStore
+import dreifa.app.tasks.TaskFactory
 import dreifa.app.tasks.TestLocations
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.tasks.inbuilt.fileBundle.*
@@ -80,7 +82,7 @@ class TPTasksTest {
         Pipelines.registerProvider(reg, UniqueId.fromString("003"), "com.example.Provider3", "providerThree")
 
         val queryTask = TPQueryTaskImpl(reg)
-        val infoTask = TPInfoTaskImpl(reg)
+        //val infoTask = TPInfoTaskImpl(reg)
 
         // 2. Query no filter
         assertThat(queryTask.exec(ctx, TPQueryParams()).size, equalTo(3))
@@ -140,16 +142,19 @@ class TPTasksTest {
     }
 
     @Test
-    fun `should load TaskProvider`() {
+    fun `should load TaskFactory for the provider`() {
         val (reg, _, _) = setupRegistry()
-        val (providerId, bundleId) = Pipelines.registerProvider(reg)
+        val (providerId, _) = Pipelines.registerProvider(
+            reg = reg,
+            providerClazz = "dreifa.app.terraform.tasks.TFTasks" // must be the correct class name
+        )
 
-        // 2. Get info back for a provider
+        // get back a TaskFactory
         val ctx = SimpleExecutionContext()
-        val result = TPLoadProviderTaskImpl(reg).exec(ctx, providerId)
+        val result = TPLoadTaskFactoryTaskImpl(reg).exec(ctx, providerId)
 
-        println(result)
-
+        assert(result is TaskFactory)
+        assertThat(result.list(), !isEmpty)
     }
 
     private fun setupRegistry(): Triple<Registry, EventStore, SKS> {

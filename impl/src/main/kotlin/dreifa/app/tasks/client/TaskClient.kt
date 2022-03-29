@@ -113,9 +113,13 @@ class SimpleTaskClient(registry: Registry) : TaskClient {
         val executionContext = SimpleExecutionContext(producerContext)
 
         try {
-            // note, force serialisation / de-serialisation locally to catch any problems early
-            val result = task.exec(executionContext, roundTripInput(input))
-            return (roundTripOutput(result))
+            return if (task is NotRemotableTask) {
+                task.exec(executionContext, input)
+            } else {
+                // note, force serialisation / de-serialisation locally to catch any problems early
+                val result = task.exec(executionContext, roundTripInput(input))
+                roundTripOutput(result)
+            }
         } catch (e: Exception) {
             val message = LogMessage(
                 executionId = executionContext.executionId(),

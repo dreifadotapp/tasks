@@ -10,8 +10,10 @@ import dreifa.app.tasks.demo.echo.EchoTasks
 import dreifa.app.tasks.logging.DefaultLoggingChannelFactory
 import dreifa.app.tasks.logging.LoggingChannelLocator
 import dreifa.app.tasks.logging.LoggingReaderContext
+import dreifa.app.types.NotRequired
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.io.File
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SimpleTaskClientTests : BaseTaskClientTest() {
@@ -116,6 +118,20 @@ class SimpleTaskClientTests : BaseTaskClientTest() {
                 )
             )
         )
+    }
+
+    @Test
+    fun `should skip round tripping for NotRemotableTask`() {
+        // these are a special case - we don't force serialisation
+        // for these tasks as it would likely fail.
+        val clientContext = SimpleClientContext()
+        val result = SimpleTaskClient(registry).execBlocking(
+            clientContext,
+            "dreifa.app.tasks.demo.CannotRemoteTask",
+            NotRequired.instance(),
+            File::class
+        )
+        assert(result is File)
     }
 
 }

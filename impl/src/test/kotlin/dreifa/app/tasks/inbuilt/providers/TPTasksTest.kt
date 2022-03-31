@@ -25,7 +25,7 @@ class TPTasksTest {
     @Test
     fun `should scan jar`() {
         // 1. setup
-        val (reg, ses, sks) = setupRegistry()
+        val (reg, _, _) = setupRegistry()
         val ctx = SimpleExecutionContext()
         val bundle = Fixtures.terraformTaskJar()
         val bundleId = bundle.id.toString()
@@ -47,7 +47,7 @@ class TPTasksTest {
     @Test
     fun `should register provider by generating an event`() {
         // 1. Setup
-        val (reg, ses, sks) = setupRegistry()
+        val (reg, ses, _) = setupRegistry()
         val bundle = Fixtures.terraformTaskJar()
         Pipelines.storeJar(reg, bundle)
 

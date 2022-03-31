@@ -11,15 +11,11 @@ import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
 
-data class TPLoadProviderResult(
-    val providerId: UniqueId
-)
-
 /**
  * This Task loads a provider for use. Thr provider must have been registered using
  * the TPRegisterProviderTask.
  *
- * Note this 'NotRemotableTask', i.e the resuling TaskFactory can only be used locally
+ * Note this 'NotRemotableTask', i.e the resulting TaskFactory can only be used locally
  *
  * This task does three things:
  *  - download the JAR file(s) in the associated FileBundler to local storage

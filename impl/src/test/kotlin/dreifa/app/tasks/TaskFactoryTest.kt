@@ -186,9 +186,9 @@ class TaskFactoryTest {
     @Test
     fun `should load Tasks in custom classloader`() {
         val clazzLoader = terraFormTasksClassLoader()
-        val factory = TaskFactory(Registry())
+        val factory = TaskFactory(Registry(),clazzLoader)
 
-        factory.register("dreifa.app.terraform.tasks.TFTasks", clazzLoader)
+        factory.register("dreifa.app.terraform.tasks.TFTasks")
         assertThat(factory.list(), !isEmpty)
 
         val echoTask = factory.createInstance("dreifa.app.terraform.tasks.TFEchoTask") as BlockingTask<String, String>

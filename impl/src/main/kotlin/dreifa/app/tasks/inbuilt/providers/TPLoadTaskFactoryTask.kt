@@ -5,11 +5,10 @@ import dreifa.app.fileBundle.adapters.TextAdapter
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.*
 import dreifa.app.tasks.executionContext.ExecutionContext
+import dreifa.app.tasks.inbuilt.classloader.CLLoadJarTaskImpl
 import dreifa.app.tasks.inbuilt.fileBundle.FBRetrieveTaskImpl
 import dreifa.app.types.UniqueId
 import java.io.File
-import java.net.URL
-import java.net.URLClassLoader
 
 /**
  * This Task loads a provider for use. Thr provider must have been registered using
@@ -33,15 +32,9 @@ class TPLoadTaskFactoryTaskImpl(private val reg: Registry) : BaseBlockingTask<Un
     override fun exec(ctx: ExecutionContext, input: UniqueId): TaskFactory {
         val provider = TPInfoTaskImpl(reg).exec(ctx, input)
 
-        val jarFilePath = downloadJarToTempDirectory(ctx, provider, input)
-
-        val classLoader = URLClassLoader(
-            arrayOf<URL>(File(jarFilePath).toURI().toURL()),
-            this.javaClass.classLoader
-        )
-
-        val factory = TaskFactory(reg)
-        factory.register(provider.providerClazz, classLoader)
+        val clazzLoader = CLLoadJarTaskImpl(reg).exec(ctx, input)
+        val factory = TaskFactory(reg, clazzLoader)
+        factory.register(provider.providerClazz)
 
         return factory
     }

@@ -6,7 +6,8 @@ import java.util.Iterator
 import kotlin.reflect.KClass
 
 class TaskFactory(
-    private val registry: Registry = Registry()
+    private val registry: Registry = Registry(),
+    private val clazzLoader: ClassLoader? = null
 ) {
     private val lookup = HashMap<String, KClass<out Task>>()
 
@@ -23,11 +24,10 @@ class TaskFactory(
      * for the JAR files may be needed
      */
     fun register(
-        taskRegistrationsClazzName: String,
-        clazzLoader: ClassLoader = this::class.java.classLoader
+        taskRegistrationsClazzName: String
     ): TaskFactory {
         try {
-            val clazz = Class.forName(taskRegistrationsClazzName, true, clazzLoader);
+            val clazz = Class.forName(taskRegistrationsClazzName, true, activeClassLoader());
             val method = clazz.methods.single { it.name == "iterator" }
             val instance: Any = clazz.getDeclaredConstructor().newInstance()
             val iterator = method.invoke(instance) as Iterator<Any>
@@ -135,5 +135,9 @@ class TaskFactory(
         } else {
             throw RuntimeException("${task::class.qualifiedName} is not an AsyncTask")
         }
+    }
+
+    private fun activeClassLoader() : ClassLoader {
+        return clazzLoader ?: this::class.java.classLoader
     }
 }

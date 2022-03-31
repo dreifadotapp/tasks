@@ -32,7 +32,7 @@ class TPLoadTaskFactoryTaskImpl(private val reg: Registry) : BaseBlockingTask<Un
     override fun exec(ctx: ExecutionContext, input: UniqueId): TaskFactory {
         val provider = TPInfoTaskImpl(reg).exec(ctx, input)
 
-        val clazzLoader = CLLoadJarTaskImpl(reg).exec(ctx, input)
+        val clazzLoader = CLLoadJarTaskImpl(reg).exec(ctx, provider.jarBundleId)
         val factory = TaskFactory(reg, clazzLoader)
         factory.register(provider.providerClazz)
 

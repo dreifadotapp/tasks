@@ -2,7 +2,7 @@ package  dreifa.app.tasks
 
 import dreifa.app.registry.Registry
 import java.lang.reflect.InvocationTargetException
-import java.util.Iterator
+import kotlin.collections.Iterator
 import kotlin.reflect.KClass
 
 class TaskFactory(
@@ -30,6 +30,7 @@ class TaskFactory(
             val clazz = Class.forName(taskRegistrationsClazzName, true, activeClassLoader());
             val method = clazz.methods.single { it.name == "iterator" }
             val instance: Any = clazz.getDeclaredConstructor().newInstance()
+            @Suppress("UNCHECKED_CAST")
             val iterator = method.invoke(instance) as Iterator<Any>
             while (iterator.hasNext()) {
                 val registration = iterator.next()

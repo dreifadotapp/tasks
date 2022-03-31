@@ -167,13 +167,13 @@ class SimpleTaskClient(registry: Registry) : TaskClient {
     ): TaskDoc<I, O> {
         val task = taskFactory.createInstance(taskName)
         if (task is TaskDoc<*, *>) {
-            return TaskDocHolder<I, O>(
+            @Suppress("UNCHECKED_CAST")
+            return TaskDocHolder(
                 task.description(),
-                @Suppress("UNCHECKED_CAST")
                 task.examples() as List<TaskExample<I, O>>
             )
         } else {
-            throw RuntimeException("No TaskDoc for task: ${taskName}")
+            throw RuntimeException("No TaskDoc for task: $taskName")
         }
     }
 }

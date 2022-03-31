@@ -35,8 +35,7 @@ class FBQueryTaskImpl(registry: Registry) : BaseBlockingTask<FBQueryParams, FBQu
         }
         if (input.bundleId != null) return queryById(input.bundleId)
         if (input.nameIsLike != null) return queryByName(input.nameIsLike)
-        if (input.bundleId == null && input.nameIsLike == null) return queryAll()
-        throw RuntimeException("Opps, unknown query combination: $input")
+        return queryAll()   // no params provided, so return all
     }
 
     private fun queryById(bundleId: UniqueId): FBQueryResult {

@@ -95,7 +95,7 @@ class FBTasksTest {
     @Test
     fun `should retrieve stored bundle`() {
         // 1. setup
-        val (reg, ses, sks) = setupRegistry()
+        val (reg, _, _) = setupRegistry()
         val ctx = SimpleExecutionContext()
         val bundle = Fixtures.helloWorldBundle()
 

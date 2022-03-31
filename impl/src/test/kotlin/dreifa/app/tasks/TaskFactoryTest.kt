@@ -191,6 +191,7 @@ class TaskFactoryTest {
         factory.register("dreifa.app.terraform.tasks.TFTasks")
         assertThat(factory.list(), !isEmpty)
 
+        @Suppress("UNCHECKED_CAST")
         val echoTask = factory.createInstance("dreifa.app.terraform.tasks.TFEchoTask") as BlockingTask<String, String>
         val result = echoTask.exec(SimpleExecutionContext(), "Foo")
         assertThat(result, equalTo("foo"))

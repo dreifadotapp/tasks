@@ -40,8 +40,7 @@ class TPQueryTaskImpl(registry: Registry) : BaseBlockingTask<TPQueryParams, TPQu
         }
         if (input.providerId != null) return queryById(input.providerId)
         if (input.nameIsLike != null) return queryByName(input.nameIsLike)
-        if (input.providerId == null && input.nameIsLike == null) return queryAll()
-        throw RuntimeException("Opps, unknown query combination: $input")
+        return queryAll()   // no parameters set, so return all
     }
 
     private fun queryById(providerId: UniqueId): TPQueryResult {

@@ -92,9 +92,9 @@ class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocat
 /**
  * Enough for unit tests and tasks running locally
  */
-class SimpleTaskClient(registry: Registry) : TaskClient {
+class SimpleTaskClient(registry: Registry, private val clazzLoader: ClassLoader? = null) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
-    private val serialiser = registry.getOrElse(JsonSerialiser::class.java, JsonSerialiser())
+    private val serialiser = JsonSerialiser(clazzLoader)
     private val logChannelLocatorFactory =
         registry.getOrElse(LoggingChannelFactory::class.java, DefaultLoggingChannelFactory(registry))
 

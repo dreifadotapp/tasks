@@ -125,13 +125,13 @@ class SimpleTaskClientTests  {
         // these are a special case - we don't force serialisation
         // for these tasks as it would likely fail.
         val clientContext = SimpleClientContext()
-        val result = SimpleTaskClient(registry).execBlocking(
+        SimpleTaskClient(registry).execBlocking(
             clientContext,
             "dreifa.app.tasks.demo.CannotRemoteTask",
             NotRequired.instance(),
             File::class
         )
-        assert(result is File)
+        // nothing to assert - just want the code to complete with exceptions
     }
 
 }

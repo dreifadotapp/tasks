@@ -17,6 +17,16 @@ dependencies {
     implementation "com.github.dreifadotapp:registry:$registryVersion"
     implementation "com.github.dreifadotapp:file-bundle:$fileBundleVersion"
 
+    implementation "io.opentelemetry:opentelemetry-sdk:1.12.0"
+    implementation "io.opentelemetry:opentelemetry-exporter-logging:1.12.0"
+    implementation "io.grpc:grpc-context:1.12.0"
+
+
+    // for zipkin example
+    implementation("io.opentelemetry:opentelemetry-exporter-zipkin:1.12.0")
+    //alpha module
+    implementation "io.opentelemetry:opentelemetry-semconv:1.12.0-alpha"
+
     testImplementation("com.natpryce:hamkrest:$hamkrestVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testImplementation('org.junit.platform:junit-platform-runner:1.0.0')

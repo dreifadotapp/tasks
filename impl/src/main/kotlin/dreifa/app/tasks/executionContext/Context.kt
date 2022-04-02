@@ -3,6 +3,8 @@ package dreifa.app.tasks.executionContext
 import dreifa.app.tasks.logging.*
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.Task
+import dreifa.app.tasks.opentelemtry.OpenTelemetryProvider
+import dreifa.app.tasks.opentelemtry.SimpleOpenTelemetryProvider
 import dreifa.app.tasks.processManager.ProcessManager
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -20,6 +22,10 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
      * context holds the logical identifier. This is used as the key to lookup any
      * state information that has supplied by earlier tasks
      */
+    @Deprecated(
+        "this was a bad idea :(. Need a better solution, " +
+                "though I'm still not sure what that will be!"
+    )
     fun pipelineContext(): PipelineContext
 
     /**
@@ -100,7 +106,7 @@ interface ExecutionContextModifier {
 
     fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext
 
-    fun withPipelineContext(newPipelineContext: PipelineContext) : ExecutionContext
+    fun withPipelineContext(newPipelineContext: PipelineContext): ExecutionContext
 }
 
 /**
@@ -186,7 +192,8 @@ class SimpleExecutionContext(
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager(),
-    private val pipelineContext: PipelineContext = PipelineContext.DEFAULT
+    private val pipelineContext: PipelineContext = PipelineContext.DEFAULT,
+    private val openTelemetryProvider: OpenTelemetryProvider = SimpleOpenTelemetryProvider()
 ) : ExecutionContext, ExecutionContextModifier {
 
     override fun pipelineContext(): PipelineContext = pipelineContext

@@ -1,10 +1,9 @@
 package dreifa.app.tasks.executionContext
 
 import dreifa.app.tasks.logging.*
-import dreifa.app.registry.Registry
 import dreifa.app.tasks.Task
 import dreifa.app.tasks.opentelemtry.OpenTelemetryProvider
-import dreifa.app.tasks.opentelemtry.SimpleOpenTelemetryProvider
+import dreifa.app.tasks.opentelemtry.InMemoryOpenTelemetryProvider
 import dreifa.app.tasks.processManager.ProcessManager
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -193,7 +192,7 @@ class SimpleExecutionContext(
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager(),
     private val pipelineContext: PipelineContext = PipelineContext.DEFAULT,
-    private val openTelemetryProvider: OpenTelemetryProvider = SimpleOpenTelemetryProvider()
+    private val openTelemetryProvider: OpenTelemetryProvider = InMemoryOpenTelemetryProvider()
 ) : ExecutionContext, ExecutionContextModifier {
 
     override fun pipelineContext(): PipelineContext = pipelineContext

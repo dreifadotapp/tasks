@@ -45,7 +45,7 @@ class AsyncTaskDocExamples {
         // not yet read
         assertThat(query.hasResult(channelId), equalTo(false))
         // wait long enough
-        Thread.sleep(PlatformTimer.testDelayInMs(1))
+        Thread.sleep(PlatformTimer.testDelayInMs(10))
         // now ready
         assert(query.hasResult(channelId))
         val result = query.result<Int>(channelId)
@@ -104,7 +104,7 @@ class AsyncTaskDocExamples {
         // not yet read
         assertThat(query.hasResult(channelId), equalTo(false))
         // wait long enough
-        Thread.sleep(PlatformTimer.clockTick() * 5)
+        Thread.sleep(PlatformTimer.clockTick() * 20)
         // now ready
         assert(query.hasResult(channelId))
         val result = query.result<Int>(channelId)

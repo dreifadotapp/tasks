@@ -32,12 +32,14 @@ particular:
 
 As with everything in [Dreifa dot App](https://dreifa.app), this library has minimal dependencies:
 
-* Kotlin 1.4
+* Kotlin 1.5
 * Java 11
 * The object [Registry](https://github.com/dreifadotapp/registry#readme)
 * The [Commons](https://github.com/dreifadotadotapp/commons#readme) module
 * The [Really Simple Serialisation(rss)](https://github.com/dreifadotapp/really-simple-serialisation#readme) module
     - [Jackson](https://github.com/FasterXML/jackson) for JSON serialisation
+* The [Simple Event Store(ses)](https://github.com/dreifadotapp/simple-event-store#readme) module
+* The [Simple KV Store(sks)](https://github.com/dreifadotapp/simple-kv-store#readme) module
 
 ## Adding as a dependency
 Maven jars are deployed using JitPack. See releases for version details.

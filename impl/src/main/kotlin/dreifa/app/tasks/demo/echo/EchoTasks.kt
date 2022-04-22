@@ -86,7 +86,7 @@ class EchoUUIDTask : BaseBlockingTask<UUID, UUID>() {
 
 class EchoStringListTask : BaseBlockingTask<StringList, StringList>(), TaskDoc<StringList, StringList> {
     override fun exec(ctx: ExecutionContext, input: StringList): StringList {
-        return StringList(input.map { it.toUpperCase() })
+        return StringList(input.map { it.uppercase() })
     }
 
     override fun description(): String = "A simple task for demoing lists. The input list is echoed back in upper-case"

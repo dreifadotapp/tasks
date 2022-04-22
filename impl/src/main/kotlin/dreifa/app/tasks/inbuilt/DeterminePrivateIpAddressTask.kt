@@ -100,7 +100,7 @@ class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
     }
 
     private fun isLaptop(): Boolean {
-        val osName = System.getProperties().getProperty("os.name").toLowerCase()
+        val osName = System.getProperties().getProperty("os.name").lowercase()
         if (osName.contains("mac")) return true
         if (osName.contains("win")) return true
 

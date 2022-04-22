@@ -20,9 +20,8 @@ interface Locations {
      * instance qualifier from the execution context
      */
     fun serviceHomeDirectory(ctx: ExecutionContext, product: String, service: String? = null): String {
-        return serviceHomeDirectory(product, service, ctx.instanceQualifier()?.toLowerCase())
+        return serviceHomeDirectory(product, service, ctx.instanceQualifier()?.lowercase())
     }
-
 
     /**
      * Where any cached data is stored.

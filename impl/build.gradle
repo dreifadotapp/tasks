@@ -16,6 +16,7 @@ dependencies {
     implementation "com.github.dreifadotapp:commons:$commonsVersion"
     implementation "com.github.dreifadotapp:registry:$registryVersion"
     implementation "com.github.dreifadotapp:file-bundle:$fileBundleVersion"
+    implementation "com.github.dreifadotapp:open-telemetry:$openTelementryVersion"
 
     //implementation "io.opentelemetry:opentelemetry-sdk:1.12.0"
     //implementation "io.opentelemetry:opentelemetry-exporter-logging:1.12.0"

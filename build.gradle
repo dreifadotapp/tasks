@@ -18,7 +18,6 @@ plugins {
 
 
 allprojects {
-    //version = "0.0.1"  - not needed - will be set by Jitpack based on the tag
 
     repositories {
         mavenCentral()

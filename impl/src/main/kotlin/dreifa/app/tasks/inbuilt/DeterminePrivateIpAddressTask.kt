@@ -19,10 +19,6 @@ import java.util.*
 interface DeterminePrivateIpAddressTask : BlockingTask<NotRequired, String>
 
 class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
-    private val taskId = UUID.randomUUID()
-    override fun taskId(): UUID {
-        return taskId
-    }
 
     override fun exec(ctx: ExecutionContext, input: NotRequired): String {
         if (isForced()) {

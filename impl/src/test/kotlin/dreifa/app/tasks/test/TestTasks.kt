@@ -78,8 +78,7 @@ class NotRequiredParamTask() : BaseBlockingTask<NotRequired, Unit>(), UnitBlocki
 
 class FileTask : BaseBlockingTask<File, Int>() {
     override fun exec(ctx: ExecutionContext, input: File): Int {
-        val modifiedCtx = ctxWithTaskID(ctx)
-        modifiedCtx.log(LogMessage.info("Loading file $input"))
+        ctx.log(LogMessage.info("Loading file $input"))
         return input.readBytes().size
     }
 }
@@ -87,8 +86,7 @@ class FileTask : BaseBlockingTask<File, Int>() {
 
 class URLTask : BaseBlockingTask<URL, String>() {
     override fun exec(ctx: ExecutionContext, input: URL): String {
-        val modifiedCtx = ctxWithTaskID(ctx)
-        modifiedCtx.log(LogMessage.info("Loading url $input"))
+        ctx.log(LogMessage.info("Loading url $input"))
         return input.toExternalForm()
     }
 }

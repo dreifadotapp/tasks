@@ -19,8 +19,7 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDoc<Int, Int> {
 
     override fun exec(ctx: ExecutionContext, input: Int): Int {
         // this is normally the first line - it ensures the task is stored in the context
-        val ctxWithTask = ctx.withTaskId(this)
-        ctxWithTask.log(LogMessage.info("Calculating square of $input"))
+        ctx.log(LogMessage.info("Calculating square of $input"))
         return input.times(input)
     }
 
@@ -117,16 +116,14 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
 
 class FileTask : BaseBlockingTask<File, Int>() {
     override fun exec(ctx: ExecutionContext, input: File): Int {
-        val ctx2 = ctx.withTaskId(taskId())
-        ctx2.log(LogMessage.info("Loading file $input"))
+        ctx.log(LogMessage.info("Loading file $input"))
         return input.readBytes().size
     }
 }
 
 class UnitTask : BaseUnitBlockingTask<String>() {
     override fun exec(ctx: ExecutionContext, input: String) {
-        val ctx2 = ctx.withTaskId(taskId())
-        ctx2.log(LogMessage.info("Params are: $input"))
+        ctx.log(LogMessage.info("Params are: $input"))
     }
 }
 
@@ -163,8 +160,6 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
             resultChannel.accept(result)
         }
     }
-
-    override fun taskId(): UUID = taskId
 }
 
 

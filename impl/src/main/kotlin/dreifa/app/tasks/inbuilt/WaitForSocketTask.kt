@@ -16,7 +16,6 @@ import java.util.*
 interface WaitForSocketTask : AsyncTask<SocketAddress, Long> {}
 
 class WaitForSocketTaskImpl : WaitForSocketTask {
-    private val taskId = UUID.randomUUID()
     override fun exec(
         ctx: ExecutionContext,
         channelLocator: AsyncResultChannelSinkLocator,
@@ -24,10 +23,6 @@ class WaitForSocketTaskImpl : WaitForSocketTask {
         input: SocketAddress
     ) {
         doit(ctx, input)
-    }
-
-    override fun taskId(): UUID {
-        return taskId
     }
 
     fun doit(ctx: ExecutionContext, params: SocketAddress): Long {
@@ -44,7 +39,6 @@ class WaitForSocketTaskImpl : WaitForSocketTask {
 fun isSocketAlive(params: SocketAddress) = false
 
 class WaitForSocketTaskFake : WaitForSocketTask {
-    private val taskId = UUID.randomUUID()
     override fun exec(
         ctx: ExecutionContext,
         channelLocator: AsyncResultChannelSinkLocator,
@@ -54,9 +48,6 @@ class WaitForSocketTaskFake : WaitForSocketTask {
         TODO("Not yet implemented")
     }
 
-    override fun taskId(): UUID {
-        return taskId
-    }
 }
 
 

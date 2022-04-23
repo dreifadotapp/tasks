@@ -18,11 +18,6 @@ class PollBlockingTask<I, O>(
     private val intervalMs: Long = 1000
 ) : BlockingTask<I, O> {
 
-    private val taskId = UUID.randomUUID()
-    override fun taskId(): UUID {
-        return taskId
-    }
-
     override fun exec(ctx: ExecutionContext, input: I): O {
         val startTime = System.currentTimeMillis()
         var result = task.exec(ctx, input)

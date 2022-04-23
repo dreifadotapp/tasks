@@ -124,8 +124,7 @@ class SimpleTaskClient(registry: Registry, private val clazzLoader: ClassLoader?
             val message = LogMessage(
                 executionId = executionContext.executionId(),
                 level = LogLevel.WARN,
-                body = "Task generated exception of: ${e.message}",
-                taskId = task.taskId()
+                body = "Task generated exception of: ${e.message}"
             )
             loggingConsumerContext.acceptLog(message)
             throw e

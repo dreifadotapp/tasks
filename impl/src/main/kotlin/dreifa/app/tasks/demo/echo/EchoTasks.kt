@@ -149,7 +149,6 @@ class EchoToLogTask : BaseBlockingTask<String, Unit>() {
         ctx.log(
             LogMessage(
                 executionId = ctx.executionId(),
-                taskId = this.taskId(),
                 level = LogLevel.INFO,
                 body = input
             )
@@ -203,10 +202,6 @@ class EchoStringAsyncTask(registry: Registry) : BaseEchoAsyncTask<String, String
 }
 
 class EchoToConsoleTask : BlockingTask<String, Unit> {
-    private val taskId = UUID.randomUUID()
-    override fun taskId(): UUID {
-        return taskId
-    }
 
     override fun exec(ctx: ExecutionContext, input: String): Unit {
         ctx.stdout().println(input)

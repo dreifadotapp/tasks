@@ -95,8 +95,6 @@ interface ExecutionContextModifier {
 
     fun withTaskId(taskId: UUID): ExecutionContext
 
-    fun withTaskId(task: Task): ExecutionContext = withTaskId(task.taskId())
-
     fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext
 
     fun withLoggingProducerContext(newLoggingProducerContext: LoggingProducerContext): ExecutionContext

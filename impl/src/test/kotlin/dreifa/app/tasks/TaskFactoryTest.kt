@@ -259,8 +259,6 @@ class TaskFactoryTest {
 }
 
 class MultiplyTask : BlockingTask<Int, Int> {
-    private val taskId = UUID.randomUUID()
-    override fun taskId(): UUID = taskId
     override fun exec(ctx: ExecutionContext, input: Int) = input * input
 }
 
@@ -278,23 +276,17 @@ class Adder : Calculator {
 
 class CalculateTask(registry: Registry) : BlockingTask<Int, Int> {
     private val calculator = registry.get(Calculator::class.java)
-    private val taskId = UUID.randomUUID()
-    override fun taskId(): UUID = taskId
     override fun exec(ctx: ExecutionContext, input: Int): Int = calculator.calc(input)
 }
 
 interface SimpleTask : BlockingTask<NotRequired, String>
 
 class HelloWorldTask() : SimpleTask {
-    private val taskId = UUID.randomUUID()
     override fun exec(ctx: ExecutionContext, input: NotRequired): String = "Hello World"
-    override fun taskId(): UUID = taskId
 }
 
 class GoodbyeWorldTask() : SimpleTask {
-    private val taskId = UUID.randomUUID()
     override fun exec(ctx: ExecutionContext, input: NotRequired): String = "Goodbye, cruel World"
-    override fun taskId(): UUID = taskId
 }
 
 // Tasks can either have a default constructor, or a constructor that takes a registry
@@ -303,7 +295,4 @@ class TaskWithoutAGoodConstructor(notAllowedConstructor: String) : Task {
     init { // just to stop a compiler warning
         notAllowedConstructor == notAllowedConstructor
     }
-
-    private val taskId = UUID.randomUUID()
-    override fun taskId(): UUID = taskId
 }

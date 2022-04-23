@@ -34,7 +34,7 @@ data class TPScanJarRequest(
  */
 interface TPScanJarTask : BlockingTask<TPScanJarRequest, StringList>
 
-class TPScanJarTaskImpl(reg: Registry) : BaseBlockingTask<TPScanJarRequest, StringList>(), TPScanJarTask {
+class TPScanJarTaskImpl(reg: Registry) : BlockingTask<TPScanJarRequest, StringList>, TPScanJarTask {
     private val retrieveBundleTask = FBRetrieveTaskImpl(reg)
     private val locations = reg.get(Locations::class.java)
     private val adapter = TextAdapter()

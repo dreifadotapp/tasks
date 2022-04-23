@@ -15,7 +15,7 @@ import java.util.*
  Some prebuilt demo tasks for tests and example
  */
 
-class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDoc<Int, Int> {
+class CalcSquareTask : BlockingTask<Int, Int>, TaskDoc<Int, Int> {
 
     override fun exec(ctx: ExecutionContext, input: Int): Int {
         // this is normally the first line - it ensures the task is stored in the context
@@ -62,7 +62,7 @@ class CalcSquareTask : BaseBlockingTask<Int, Int>(), TaskDoc<Int, Int> {
 }
 
 
-class ExceptionGeneratingBlockingTask : BaseBlockingTask<String, String>(), TaskDoc<String, String> {
+class ExceptionGeneratingBlockingTask : BlockingTask<String, String>, TaskDoc<String, String> {
     override fun exec(ctx: ExecutionContext, input: String): String {
         if (input.contains("exception", true)) {
             throw RuntimeException(input)
@@ -90,7 +90,7 @@ class ExceptionGeneratingBlockingTask : BaseBlockingTask<String, String>(), Task
 }
 
 
-class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, String>() {
+class ExceptionGeneratingAsyncTask(registry: Registry) : AsyncTask<String, String> {
 
     private val executors = registry.get(ExecutorFactory::class.java).executorService()
 
@@ -114,20 +114,20 @@ class ExceptionGeneratingAsyncTask(registry: Registry) : BaseAsyncTask<String, S
     }
 }
 
-class FileTask : BaseBlockingTask<File, Int>() {
+class FileTask : BlockingTask<File, Int> {
     override fun exec(ctx: ExecutionContext, input: File): Int {
         ctx.log(LogMessage.info("Loading file $input"))
         return input.readBytes().size
     }
 }
 
-class UnitTask : BaseUnitBlockingTask<String>() {
+class UnitTask : UnitBlockingTask<String> {
     override fun exec(ctx: ExecutionContext, input: String) {
         ctx.log(LogMessage.info("Params are: $input"))
     }
 }
 
-class PrintStreamTask : BaseUnitBlockingTask<String>() {
+class PrintStreamTask : UnitBlockingTask<String> {
     override fun exec(ctx: ExecutionContext, input: String) {
         ctx.stdout().print(input)
     }
@@ -163,7 +163,7 @@ class CalcSquareAsyncTask(registry: Registry) : AsyncTask<Int, Int> {
 }
 
 
-class NoDocsTask : BaseBlockingTask<String, String>() {
+class NoDocsTask : BlockingTask<String, String> {
     override fun exec(ctx: ExecutionContext, input: String) = input
 }
 
@@ -171,7 +171,7 @@ class NoDocsTask : BaseBlockingTask<String, String>() {
  * This can only be run locally, as File is not serialisable (it only makes
  * sense to call it on the computer it ie being run on)
  */
-class CannotRemoteTask : BaseBlockingTask<NotRequired, File>(), NotRemotableTask {
+class CannotRemoteTask : BlockingTask<NotRequired, File>, NotRemotableTask {
     override fun exec(ctx: ExecutionContext, input: NotRequired): File {
         return File(".")
     }

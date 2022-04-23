@@ -36,55 +36,55 @@ data class DemoModel(
  * of communication channels and serialisation
  */
 
-class EchoIntTask : BaseBlockingTask<Int, Int>() {
+class EchoIntTask : BlockingTask<Int, Int> {
     override fun exec(ctx: ExecutionContext, input: Int): Int {
         return input
     }
 }
 
-class EchoLongTask : BaseBlockingTask<Long, Long>() {
+class EchoLongTask : BlockingTask<Long, Long> {
     override fun exec(ctx: ExecutionContext, input: Long): Long {
         return input
     }
 }
 
-class EchoDoubleTask : BaseBlockingTask<Double, Double>() {
+class EchoDoubleTask : BlockingTask<Double, Double> {
     override fun exec(ctx: ExecutionContext, input: Double): Double {
         return input
     }
 }
 
-class EchoFloatTask : BaseBlockingTask<Float, Float>() {
+class EchoFloatTask : BlockingTask<Float, Float> {
     override fun exec(ctx: ExecutionContext, input: Float): Float {
         return input
     }
 }
 
-class EchoBooleanTask : BaseBlockingTask<Boolean, Boolean>() {
+class EchoBooleanTask : BlockingTask<Boolean, Boolean> {
     override fun exec(ctx: ExecutionContext, input: Boolean): Boolean {
         return input
     }
 }
 
-class EchoStringTask : BaseBlockingTask<String, String>() {
+class EchoStringTask : BlockingTask<String, String> {
     override fun exec(ctx: ExecutionContext, input: String): String {
         return input
     }
 }
 
-class EchoBigDecimalTask : BaseBlockingTask<BigDecimal, BigDecimal>() {
+class EchoBigDecimalTask : BlockingTask<BigDecimal, BigDecimal> {
     override fun exec(ctx: ExecutionContext, input: BigDecimal): BigDecimal {
         return input
     }
 }
 
-class EchoUUIDTask : BaseBlockingTask<UUID, UUID>() {
+class EchoUUIDTask : BlockingTask<UUID, UUID> {
     override fun exec(ctx: ExecutionContext, input: UUID): UUID {
         return input
     }
 }
 
-class EchoStringListTask : BaseBlockingTask<StringList, StringList>(), TaskDoc<StringList, StringList> {
+class EchoStringListTask : BlockingTask<StringList, StringList>, TaskDoc<StringList, StringList> {
     override fun exec(ctx: ExecutionContext, input: StringList): StringList {
         return StringList(input.map { it.uppercase() })
     }
@@ -101,7 +101,7 @@ class EchoStringListTask : BaseBlockingTask<StringList, StringList>(), TaskDoc<S
     }
 }
 
-class EchoDemoModelTask : BaseBlockingTask<DemoModel, DemoModel>(), TaskDoc<DemoModel, DemoModel> {
+class EchoDemoModelTask : BlockingTask<DemoModel, DemoModel>, TaskDoc<DemoModel, DemoModel> {
     override fun exec(ctx: ExecutionContext, input: DemoModel): DemoModel {
         return input
     }
@@ -126,25 +126,25 @@ class EchoDemoModelTask : BaseBlockingTask<DemoModel, DemoModel>(), TaskDoc<Demo
     }
 }
 
-class EchoEnumTask : BaseBlockingTask<Colour, Colour>() {
+class EchoEnumTask : BlockingTask<Colour, Colour> {
     override fun exec(ctx: ExecutionContext, input: Colour): Colour {
         return input
     }
 }
 
-class EchoToStdOutTask : BaseBlockingTask<String, Unit>() {
+class EchoToStdOutTask : BlockingTask<String, Unit> {
     override fun exec(ctx: ExecutionContext, input: String): Unit {
         ctx.stdout().print(input)
     }
 }
 
-class EchoToStdErrTask : BaseBlockingTask<String, Unit>() {
+class EchoToStdErrTask : BlockingTask<String, Unit> {
     override fun exec(ctx: ExecutionContext, input: String): Unit {
         ctx.stderr().print(input)
     }
 }
 
-class EchoToLogTask : BaseBlockingTask<String, Unit>() {
+class EchoToLogTask : BlockingTask<String, Unit> {
     override fun exec(ctx: ExecutionContext, input: String) {
         ctx.log(
             LogMessage(
@@ -156,7 +156,7 @@ class EchoToLogTask : BaseBlockingTask<String, Unit>() {
     }
 }
 
-abstract class BaseEchoAsyncTask<I, O>(registry: Registry) : BaseAsyncTask<I, O>() {
+abstract class BaseEchoAsyncTask<I, O>(registry: Registry) : AsyncTask<I, O> {
     protected val resultChannelFactory = registry.get(AsyncResultChannelSinkFactory::class.java)
 
     protected fun submitResultWithDelay(

@@ -23,7 +23,7 @@ import java.io.File
  */
 interface TPLoadTaskFactoryTask : BlockingTask<UniqueId, TaskFactory>, NotRemotableTask
 
-class TPLoadTaskFactoryTaskImpl(private val reg: Registry) : BaseBlockingTask<UniqueId, TaskFactory>(),
+class TPLoadTaskFactoryTaskImpl(private val reg: Registry) : BlockingTask<UniqueId, TaskFactory>,
     TPLoadTaskFactoryTask {
     private val retrieveBundleTask = FBRetrieveTaskImpl(reg)
     private val locations = reg.get(Locations::class.java)

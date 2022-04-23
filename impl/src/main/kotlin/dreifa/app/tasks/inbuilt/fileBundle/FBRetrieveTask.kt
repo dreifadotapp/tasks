@@ -4,7 +4,6 @@ import dreifa.app.fileBundle.adapters.TextAdapter
 import dreifa.app.registry.Registry
 import dreifa.app.ses.*
 import dreifa.app.sks.SKS
-import dreifa.app.tasks.BaseBlockingTask
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.types.Key
@@ -13,7 +12,7 @@ import java.lang.RuntimeException
 
 interface FBRetrieveTask : BlockingTask<UniqueId, String>
 
-class FBRetrieveTaskImpl(registry: Registry) : BaseBlockingTask<UniqueId, String>(), FBRetrieveTask {
+class FBRetrieveTaskImpl(registry: Registry) : BlockingTask<UniqueId, String>, FBRetrieveTask {
     private val ses = registry.get(EventStore::class.java)
     private val sks = registry.get(SKS::class.java)
 

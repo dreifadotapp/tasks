@@ -2,12 +2,10 @@ package dreifa.app.tasks.inbuilt.fileBundle
 
 import dreifa.app.registry.Registry
 import dreifa.app.ses.*
-import dreifa.app.tasks.BaseBlockingTask
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.types.LikeString
 import dreifa.app.types.UniqueId
-import java.lang.RuntimeException
 
 data class FBQueryParams(
     val bundleId: UniqueId? = null,
@@ -24,7 +22,7 @@ class FBQueryResult(data: List<FBQueryResultItem>) : ArrayList<FBQueryResultItem
 
 interface FBQueryTask : BlockingTask<FBQueryParams, FBQueryResult>
 
-class FBQueryTaskImpl(registry: Registry) : BaseBlockingTask<FBQueryParams, FBQueryResult>(), FBQueryTask {
+class FBQueryTaskImpl(registry: Registry) : BlockingTask<FBQueryParams, FBQueryResult>, FBQueryTask {
     private val ses = registry.get(EventStore::class.java)
 
     override fun exec(ctx: ExecutionContext, input: FBQueryParams): FBQueryResult {

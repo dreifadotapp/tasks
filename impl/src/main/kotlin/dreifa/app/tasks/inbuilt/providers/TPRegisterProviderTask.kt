@@ -4,7 +4,6 @@ import dreifa.app.registry.Registry
 import dreifa.app.ses.Event
 import dreifa.app.ses.EventFactory
 import dreifa.app.ses.EventStore
-import dreifa.app.tasks.BaseBlockingTask
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.IdempotentTask
 import dreifa.app.tasks.executionContext.ExecutionContext
@@ -47,7 +46,7 @@ object TPProviderRegisteredEventFactory : EventFactory {
     override fun eventType(): String = "dreifa.app.tasks.inbuilt.providers.TPProviderRegistered"
 }
 
-class TPRegisterProviderTaskImpl(val registry: Registry) : BaseBlockingTask<TPRegisterProviderRequest, Unit>(),
+class TPRegisterProviderTaskImpl(val registry: Registry) : BlockingTask<TPRegisterProviderRequest, Unit>,
     TPRegisterProviderTask {
     private val ses = registry.get(EventStore::class.java)
     override fun exec(ctx: ExecutionContext, input: TPRegisterProviderRequest) {

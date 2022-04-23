@@ -2,7 +2,7 @@ package dreifa.app.tasks.opentelemetry
 
 import dreifa.app.opentelemetry.OpenTelemetryProvider
 import dreifa.app.registry.Registry
-import dreifa.app.tasks.BaseBlockingTask
+import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
@@ -13,7 +13,7 @@ import io.opentelemetry.extension.kotlin.asContextElement
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
-abstract class SuspendableBlockingTaskReporter<in I, out O>(reg: Registry) : BaseBlockingTask<I, O>() {
+abstract class SuspendableBlockingTaskReporter<in I, out O>(reg: Registry) : BlockingTask<I, O> {
     private val provider = reg.get(OpenTelemetryProvider::class.java)
     private val tracer = reg.get(Tracer::class.java)
 

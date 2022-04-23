@@ -59,7 +59,7 @@ Tasks have three key characteristics:
 The most basic form is a `BlockingTask`. A simple example is below:
 
 ```kotlin
-class CalcSquareTask : BaseBlockingTask<Int, Int>() {
+class CalcSquareTask : BlockingTask<Int, Int> {
 
     override fun exec(ctx: ExecutionContext, params: Int): Int {
         // this is normally the first line - it ensures the task is stored in the context
@@ -212,7 +212,7 @@ The implementing task controls what is sent. Looking at the code for `ListDirect
 This behaviour is in addition to any distributed logging that may be enabled, which is described later.
 
 ```kotlin
-class ListDirectoryTaskFake : ListDirectoryTask, BaseBlockingTask<String, List<String>>() {
+class ListDirectoryTaskFake : ListDirectoryTask, BlockingTask<String, List<String>> {
     override fun exec(executionContext: ExecutionContext, params: String): List<String> {
         val out = executionContext.stdout()
         out.println("ListDirectoryTask:")

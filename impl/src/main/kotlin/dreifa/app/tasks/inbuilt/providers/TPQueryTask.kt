@@ -2,12 +2,10 @@ package dreifa.app.tasks.inbuilt.providers
 
 import dreifa.app.registry.Registry
 import dreifa.app.ses.*
-import dreifa.app.tasks.BaseBlockingTask
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.types.LikeString
 import dreifa.app.types.UniqueId
-import java.lang.RuntimeException
 
 data class TPQueryParams(
     val providerId: UniqueId? = null,
@@ -29,7 +27,7 @@ class TPQueryResult(data: List<TPQueryResultItem>) : ArrayList<TPQueryResultItem
 
 interface TPQueryTask : BlockingTask<TPQueryParams, TPQueryResult>
 
-class TPQueryTaskImpl(registry: Registry) : BaseBlockingTask<TPQueryParams, TPQueryResult>(), TPQueryTask {
+class TPQueryTaskImpl(registry: Registry) : BlockingTask<TPQueryParams, TPQueryResult>, TPQueryTask {
     private val ses = registry.get(EventStore::class.java)
 
     override fun exec(ctx: ExecutionContext, input: TPQueryParams): TPQueryResult {

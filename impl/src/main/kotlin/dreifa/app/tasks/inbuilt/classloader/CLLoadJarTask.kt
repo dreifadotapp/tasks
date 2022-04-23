@@ -3,7 +3,6 @@ package dreifa.app.tasks.inbuilt.classloader
 import dreifa.app.fileBundle.adapters.FilesAdapter
 import dreifa.app.fileBundle.adapters.TextAdapter
 import dreifa.app.registry.Registry
-import dreifa.app.tasks.BaseBlockingTask
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.Locations
 import dreifa.app.tasks.NotRemotableTask
@@ -17,7 +16,7 @@ import java.util.HashMap
 
 interface CLLoadJarTask : BlockingTask<UniqueId, URLClassLoader>, NotRemotableTask
 
-class CLLoadJarTaskImpl(reg: Registry) : BaseBlockingTask<UniqueId, URLClassLoader>(), CLLoadJarTask {
+class CLLoadJarTaskImpl(reg: Registry) : BlockingTask<UniqueId, URLClassLoader>, CLLoadJarTask {
     private val retrieveBundleTask = FBRetrieveTaskImpl(reg)
     private val locations = reg.get(Locations::class.java)
     private val adapter = TextAdapter()

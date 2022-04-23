@@ -30,7 +30,7 @@ object FBStoredEventFactory : EventFactory {
     override fun eventType(): String = "dreifa.app.tasks.inbuilt.fileBundle.FBStored"
 }
 
-class FBStoreTaskImpl(registry: Registry) : BaseBlockingTask<String, Unit>(), FBStoreTask {
+class FBStoreTaskImpl(registry: Registry) : BlockingTask<String, Unit>, FBStoreTask {
     private val ses = registry.get(EventStore::class.java)
     private val sks = registry.get(SKS::class.java)
 

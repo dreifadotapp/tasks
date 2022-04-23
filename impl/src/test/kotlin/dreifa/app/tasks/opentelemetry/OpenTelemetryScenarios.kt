@@ -23,16 +23,18 @@ class OpenTelemetryScenarios {
 
         // 3. verify
         val spansAnalyser = provider.spans().analyser()
-        //assertThat(spansAnalyser.traceIds().size, equalTo(1))
+        assertThat(spansAnalyser.traceIds().size, equalTo(1))
+        assertThat(spansAnalyser.spanIds().size, equalTo(1))
 
-
+        val spanAnalyser = spansAnalyser.firstSpan().analyser()
+        assertThat(spanAnalyser.name , equalTo("EchoStringTask"))
     }
 
     private fun init(): Triple<Registry, ZipKinOpenTelemetryProvider, Tracer> {
         val reg = Registry()
         val provider = ZipKinOpenTelemetryProvider()
         val tracer = provider.provider().getTracer("OpenTelemetryScenarios")
-        reg.store(provider)
+        reg.store(provider).store(tracer)
         return Triple(reg, provider, tracer)
     }
 }

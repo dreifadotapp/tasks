@@ -47,7 +47,7 @@ interface UnitBlockingTask<I> : BlockingTask<I, Unit> {
     override fun exec(ctx: ExecutionContext, input: I)
 }
 
-abstract class BaseBlockingTask<I, O> : BlockingTask<I, O> {
+abstract class BaseBlockingTask<in I, out O> : BlockingTask<I, O> {
     private val taskID = UUID.randomUUID()
     override fun taskId(): UUID {
         return taskID

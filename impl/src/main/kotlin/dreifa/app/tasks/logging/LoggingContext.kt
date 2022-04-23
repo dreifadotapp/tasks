@@ -193,17 +193,11 @@ class DefaultStringLogFormatter : StringLogFormatter {
             LogFormat.Test -> {
                 val buffer = StringBuilder()
                 buffer.append("level=${msg.level}, message=${msg.body}")
-                if (msg.taskId != null) {
-                    buffer.append(", taskId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx")
-                }
                 buffer.toString()
             }
             LogFormat.Full -> {
                 val buffer = StringBuilder()
                 buffer.append("level=${msg.level}, message=${msg.body}, executionId=${msg.executionId}")
-                if (msg.taskId != null) {
-                    buffer.append(", taskId=${msg.taskId}")
-                }
                 buffer.append(", timestamp=${msg.timestamp}")
                 buffer.toString()
             }
@@ -231,7 +225,6 @@ data class LogMessage(
 
     val body: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val taskId: UUID? = null    // is this useful ? do
 ) {
     companion object {
         fun debug(body: String, executionId: UUID = UUID.randomUUID()): LogMessage = LogMessage(

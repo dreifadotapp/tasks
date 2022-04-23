@@ -6,7 +6,6 @@ import dreifa.app.tasks.SocketAddress
 import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.types.UniqueId
-import java.util.*
 
 /**
  * Checks for an open socket on a given address

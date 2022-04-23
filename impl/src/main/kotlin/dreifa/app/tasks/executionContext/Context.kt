@@ -53,8 +53,6 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
     */
     fun executionId(): UUID
 
-    fun taskId(): UUID?
-
 
     /**
      * Instance qualifier - if multiple services are deployed to a server,
@@ -74,7 +72,6 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
     fun logIt(body: String, level: LogLevel = LogLevel.INFO) {
         val msg = LogMessage(
             executionId = this.executionId(),
-            taskId = this.taskId(),
             body = body,
             level = level
         )
@@ -93,8 +90,6 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
  */
 interface ExecutionContextModifier {
 
-    fun withTaskId(taskId: UUID): ExecutionContext
-
     fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext
 
     fun withLoggingProducerContext(newLoggingProducerContext: LoggingProducerContext): ExecutionContext
@@ -109,24 +104,11 @@ interface ExecutionContextModifier {
  */
 class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionContextModifier {
     private var working = original
-    override fun withTaskId(taskId: UUID): ExecutionContext {
-        working = SimpleExecutionContext(
-            loggingProducerContext = working,
-            executionId = working.executionId(),
-            taskId = taskId,
-            executor = working.executorService(),
-            pm = working.processManager(),
-            instanceQualifier = working.instanceQualifier(),
-            pipelineContext = working.pipelineContext()
-        )
-        return working
-    }
 
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
         working = SimpleExecutionContext(
             loggingProducerContext = working,
             executionId = working.executionId(),
-            taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = instanceQualifier,
@@ -139,7 +121,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         working = SimpleExecutionContext(
             loggingProducerContext = newLoggingProducerContext,
             executionId = working.executionId(),
-            taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier(),
@@ -153,7 +134,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         working = SimpleExecutionContext(
             loggingProducerContext = logProducerContext,
             executionId = working.executionId(),
-            taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier(),
@@ -166,7 +146,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         working = SimpleExecutionContext(
             loggingProducerContext = working,
             executionId = working.executionId(),
-            taskId = working.taskId(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier(),
@@ -183,7 +162,6 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
 class SimpleExecutionContext(
     private val loggingProducerContext: LoggingProducerContext = ConsoleLoggingProducerContext(),
     private val executionId: UUID = UUID.randomUUID(),
-    private val taskId: UUID? = null,
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager(),
@@ -199,8 +177,6 @@ class SimpleExecutionContext(
 
     override fun executionId(): UUID = executionId
 
-    override fun taskId(): UUID? = taskId
-
     override fun instanceQualifier(): String? = instanceQualifier
 
     override fun logger(): LogMessageConsumer = loggingProducerContext.logger()
@@ -208,10 +184,6 @@ class SimpleExecutionContext(
     override fun stdout() = loggingProducerContext.stdout()
 
     override fun stderr() = loggingProducerContext.stderr()
-
-    override fun withTaskId(taskId: UUID): ExecutionContext {
-        return DefaultExecutionContextModifier(this).withTaskId(taskId)
-    }
 
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
         return DefaultExecutionContextModifier(this).withInstanceQualifier(instanceQualifier)

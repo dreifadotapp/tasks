@@ -10,9 +10,13 @@ import java.util.UUID
  */
 interface Task {
     /**
-     * A unique ID created for each run of the Task
+     * Every Task should have a name for logging and display in UIs.
+     * The convention is that the class names should be clear and generally unambiguous,
+     * i.e. no need to qualify by package name, and therefore
+     * there is no need to reimplement this method.
      */
-    //fun taskId(): UUID
+    fun name(): String = this::class.simpleName!!
+
 }
 
 /**
@@ -47,43 +51,20 @@ interface UnitBlockingTask<I> : BlockingTask<I, Unit> {
     override fun exec(ctx: ExecutionContext, input: I)
 }
 
+
+@Deprecated(message = "No need for a base class, just implement the interface")
 abstract class BaseBlockingTask<in I, out O> : BlockingTask<I, O> {
-    //private val taskID = UUID.randomUUID()
-//    override fun taskId(): UUID {
-//        return taskID
-//    }
 
-    /**
-     * Update the ExecutionContext with the TaskId.
-     */
-//    protected fun ctxWithTaskID(ctx: ExecutionContext): ExecutionContext =
-//        DefaultExecutionContextModifier(ctx).withTaskId(taskId())
 }
 
+@Deprecated(message = "No need for a base class, just implement the interface")
 abstract class BaseUnitBlockingTask<I> : UnitBlockingTask<I> {
-//    private val taskID = UUID.randomUUID()
-//    override fun taskId(): UUID {
-//        return taskID
-//    }
 
-    /**
-     * Update the ExecutionContext with the TaskId.
-     */
-//    protected fun ctxWithTaskID(ctx: ExecutionContext): ExecutionContext =
-//        DefaultExecutionContextModifier(ctx).withTaskId(taskId())
 }
 
+@Deprecated(message = "No need for a base class, just implement the interface")
 abstract class BaseAsyncTask<I, O> : AsyncTask<I, O> {
-//    private val taskID = UUID.randomUUID()
-//    override fun taskId(): UUID {
-//        return taskID
-//    }
 
-    /**
-     * Update the ExecutionContext with the TaskId.
-     */
-//    protected fun updatedCtx(ctx: ExecutionContext): ExecutionContext =
-//        DefaultExecutionContextModifier(ctx).withTaskId(taskId())
 }
 
 

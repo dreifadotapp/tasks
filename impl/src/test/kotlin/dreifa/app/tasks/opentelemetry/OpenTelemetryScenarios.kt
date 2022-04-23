@@ -7,8 +7,11 @@ import dreifa.app.opentelemetry.analyser
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import io.opentelemetry.api.trace.Tracer
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OpenTelemetryScenarios {
 
     @Test
@@ -28,6 +31,12 @@ class OpenTelemetryScenarios {
 
         val spanAnalyser = spansAnalyser.firstSpan().analyser()
         assertThat(spanAnalyser.name , equalTo("EchoStringTask"))
+    }
+
+    @AfterAll
+    fun `wait for zipkin`() {
+        // give it time to flush to zipkin
+        Thread.sleep(50)
     }
 
     private fun init(): Triple<Registry, ZipKinOpenTelemetryProvider, Tracer> {

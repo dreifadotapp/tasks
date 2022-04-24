@@ -1,9 +1,7 @@
 package dreifa.app.tasks
 
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
-import dreifa.app.tasks.executionContext.DefaultExecutionContextModifier
 import dreifa.app.tasks.executionContext.ExecutionContext
-import java.util.UUID
 
 /**
  * A common marker interface for a Task
@@ -16,7 +14,6 @@ interface Task {
      * there is no need to reimplement this method.
      */
     fun name(): String = this::class.simpleName!!
-
 }
 
 /**
@@ -30,7 +27,7 @@ interface IdempotentTask
 
 /**
  * A marker to indicate that this Task cannot be remoted, i.e. it can
- * only be run locally, not via a TaskClient. remotable
+ * only be run locally, not via a TaskClient.
  *
  * This should be used sparingly.
  */
@@ -50,24 +47,5 @@ interface BlockingTask<in I, out O> : Task {
 interface UnitBlockingTask<I> : BlockingTask<I, Unit> {
     override fun exec(ctx: ExecutionContext, input: I)
 }
-
-
-@Deprecated(message = "No need for a base class, just implement the interface")
-abstract class BaseBlockingTask<in I, out O> : BlockingTask<I, O> {
-
-}
-
-@Deprecated(message = "No need for a base class, just implement the interface")
-abstract class BaseUnitBlockingTask<I> : UnitBlockingTask<I> {
-
-}
-
-@Deprecated(message = "No need for a base class, just implement the interface")
-abstract class BaseAsyncTask<I, O> : AsyncTask<I, O> {
-
-}
-
-
-
 
 

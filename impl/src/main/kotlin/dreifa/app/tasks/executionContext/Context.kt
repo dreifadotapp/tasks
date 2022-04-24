@@ -1,7 +1,6 @@
 package dreifa.app.tasks.executionContext
 
 import dreifa.app.tasks.logging.*
-import dreifa.app.tasks.Task
 import dreifa.app.tasks.processManager.ProcessManager
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -13,17 +12,6 @@ import java.util.concurrent.Executors
  * change on each run
  */
 interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
-
-    /**
-     * Typically a sequence of task is run in a "pipeline". The pipeline
-     * context holds the logical identifier. This is used as the key to lookup any
-     * state information that has supplied by earlier tasks
-     */
-    @Deprecated(
-        "this was a bad idea :(. Need a better solution, " +
-                "though I'm still not sure what that will be!"
-    )
-    fun pipelineContext(): PipelineContext
 
     /**
      *  One single place for running and checking the status of processes.
@@ -95,8 +83,6 @@ interface ExecutionContextModifier {
     fun withLoggingProducerContext(newLoggingProducerContext: LoggingProducerContext): ExecutionContext
 
     fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext
-
-    fun withPipelineContext(newPipelineContext: PipelineContext): ExecutionContext
 }
 
 /**
@@ -111,8 +97,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             executionId = working.executionId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            instanceQualifier = instanceQualifier,
-            pipelineContext = working.pipelineContext()
+            instanceQualifier = instanceQualifier
         )
         return working
     }
@@ -123,8 +108,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             executionId = working.executionId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            instanceQualifier = working.instanceQualifier(),
-            pipelineContext = working.pipelineContext()
+            instanceQualifier = working.instanceQualifier()
         )
         return working
     }
@@ -136,20 +120,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
             executionId = working.executionId(),
             executor = working.executorService(),
             pm = working.processManager(),
-            instanceQualifier = working.instanceQualifier(),
-            pipelineContext = working.pipelineContext()
-        )
-        return working
-    }
-
-    override fun withPipelineContext(newPipelineContext: PipelineContext): ExecutionContext {
-        working = SimpleExecutionContext(
-            loggingProducerContext = working,
-            executionId = working.executionId(),
-            executor = working.executorService(),
-            pm = working.processManager(),
-            instanceQualifier = working.instanceQualifier(),
-            pipelineContext = newPipelineContext
+            instanceQualifier = working.instanceQualifier()
         )
         return working
     }
@@ -164,12 +135,9 @@ class SimpleExecutionContext(
     private val executionId: UUID = UUID.randomUUID(),
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
-    private val pm: ProcessManager = ProcessManager(),
-    private val pipelineContext: PipelineContext = PipelineContext.DEFAULT,
+    private val pm: ProcessManager = ProcessManager()
     //private val openTelemetryProvider: OpenTelemetryProvider = InMemoryOpenTelemetryProvider()
 ) : ExecutionContext, ExecutionContextModifier {
-
-    override fun pipelineContext(): PipelineContext = pipelineContext
 
     override fun processManager(): ProcessManager = pm
 
@@ -197,24 +165,4 @@ class SimpleExecutionContext(
         return DefaultExecutionContextModifier(this).withInMemoryLogging(logging)
     }
 
-    override fun withPipelineContext(newPipelineContext: PipelineContext): ExecutionContext {
-        return DefaultExecutionContextModifier(this).withPipelineContext(newPipelineContext)
-    }
 }
-
-//
-//interface ExecutionContextFactory {
-//
-//    /**
-//     * Inject in the key context specific information here.
-//     * Other values are overridden with the .withXXX methods
-//     * on the built execution context.
-//     */
-//    fun get(
-//        executionId: UUID = UUID.randomUUID(),
-//        taskId: UUID? = null,
-//        scoped: Registry = Registry(),
-//        logMessageConsumer: LogMessageConsumer? = null
-//
-//    ): ExecutionContext
-//}

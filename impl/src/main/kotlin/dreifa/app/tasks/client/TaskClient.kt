@@ -3,7 +3,6 @@ package dreifa.app.tasks.client
 import dreifa.app.registry.Registry
 import dreifa.app.sis.JsonSerialiser
 import dreifa.app.tasks.*
-import dreifa.app.tasks.executionContext.PipelineContext
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.tasks.logging.*
 import dreifa.app.types.UniqueId
@@ -18,12 +17,12 @@ interface SecurityPrinciple
 /**
  * Pass a JWT token that can be checked
  */
-class JwtSecurityPrinciple(val jwtToken: String) : SecurityPrinciple
+//class JwtSecurityPrinciple(val jwtToken: String) : SecurityPrinciple
 
 /**
  * Authenticated with just a username and set of roles. We trust an external system
  */
-class UserAndRoles(val userName: String, val roles: Set<String>) : SecurityPrinciple
+//class UserAndRoles(val userName: String, val roles: Set<String>) : SecurityPrinciple
 
 /**
  * For testing, or environments where security is unimportant
@@ -44,11 +43,6 @@ interface ClientContext {
      * How to be sent back log messages
      */
     fun logChannelLocator(): LoggingChannelLocator
-
-    /**
-     * The pipeline this task is running in.
-     */
-    fun pipelineContext(): PipelineContext
 
 }
 
@@ -86,7 +80,6 @@ class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocat
     private val principle = NotAuthenticatedSecurityPrinciple()
     override fun securityPrinciples(): Set<SecurityPrinciple> = setOf(principle)
     override fun logChannelLocator(): LoggingChannelLocator = loggingChannelLocator
-    override fun pipelineContext(): PipelineContext = PipelineContext.DEFAULT
 }
 
 /**

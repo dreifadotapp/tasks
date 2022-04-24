@@ -17,7 +17,7 @@ class OpenTelemetryScenarios {
     @Test
     fun `should do something`() {
         // 1. setup
-        val (reg, provider, tracer) = init()
+        val (reg, provider, _) = init()
 
         // 2. test
         val task = EchoStringTask(reg)
@@ -35,7 +35,7 @@ class OpenTelemetryScenarios {
 
     @AfterAll
     fun `wait for zipkin`() {
-        // give it time to flush to zipkin
+        // give it time to flush to zipkin before closing
         Thread.sleep(50)
     }
 

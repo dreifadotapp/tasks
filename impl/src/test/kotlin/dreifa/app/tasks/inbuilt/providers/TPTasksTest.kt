@@ -152,8 +152,6 @@ class TPTasksTest {
         // get back a TaskFactory
         val ctx = SimpleExecutionContext()
         val result = TPLoadTaskFactoryTaskImpl(reg).exec(ctx, providerId)
-
-        assert(result is TaskFactory)
         assertThat(result.list(), !isEmpty)
     }
 

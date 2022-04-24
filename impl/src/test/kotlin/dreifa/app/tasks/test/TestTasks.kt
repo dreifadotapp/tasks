@@ -133,6 +133,8 @@ class TaskRegistrationsExample : SimpleTaskRegistrations(
     )
 )
 
+
+@Suppress("UNUSED_PARAMETER")
 class TaskRegistrationsWithBadConstructor(notUsed : String) : SimpleTaskRegistrations(
     listOf(
         TaskRegistration(MultiplyTask::class),

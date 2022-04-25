@@ -1,36 +1,24 @@
 dependencies {
+    // Note: Jitpack will publish "compile" scopes setting as <scope>compile</scope> in the pom.xml
+    // but "implementation" is only published with <scope>runtime</scope>
+    //
+    // The decision is a a little arbitrary, but key deps are published with compile scope.
+    //
+
     implementation("com.github.jitpack:gradle-simple:1.0")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
-
     implementation "io.github.classgraph:classgraph:$classgraphVersion"
 
-
-    // todo - should be imported as part of com.github.dreifadotapp:open-telemetry
-    implementation "io.opentelemetry:opentelemetry-extension-kotlin:1.12.0"
-
-
-    // Jackson for JSON and YAM
-    //implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    //implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-
-    implementation "com.github.dreifadotapp:simple-serialisation:$sisVersion"
-    implementation "com.github.dreifadotapp:simple-event-store:$sesVersion"
-    implementation "com.github.dreifadotapp:simple-kv-store:$sksVersion"
-    implementation "com.github.dreifadotapp:commons:$commonsVersion"
-    implementation "com.github.dreifadotapp:registry:$registryVersion"
-    implementation "com.github.dreifadotapp:file-bundle:$fileBundleVersion"
-    implementation "com.github.dreifadotapp:open-telemetry:$openTelementryVersion"
-
-    //implementation "io.opentelemetry:opentelemetry-sdk:1.12.0"
-    //implementation "io.opentelemetry:opentelemetry-exporter-logging:1.12.0"
-    //implementation "io.grpc:grpc-context:1.12.0"
-
-    // for zipkin example
-    //implementation("io.opentelemetry:opentelemetry-exporter-zipkin:1.12.0")
-    //alpha module
-    //implementation "io.opentelemetry:opentelemetry-semconv:1.12.0-alpha"
+    // see note above
+    compile "com.github.dreifadotapp:simple-serialisation:$sisVersion"
+    compile "com.github.dreifadotapp:simple-event-store:$sesVersion"
+    compile "com.github.dreifadotapp:simple-kv-store:$sksVersion"
+    compile "com.github.dreifadotapp:commons:$commonsVersion"
+    compile "com.github.dreifadotapp:registry:$registryVersion"
+    compile "com.github.dreifadotapp:file-bundle:$fileBundleVersion"
+    compile "com.github.dreifadotapp:open-telemetry:$openTelementryVersion"
 
     testImplementation("com.natpryce:hamkrest:$hamkrestVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")

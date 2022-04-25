@@ -27,23 +27,9 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
      */
     fun executorService(): ExecutorService
 
-    /*
-      This should link back to the original invocation, so that all activity 
-      linked to it can be tracked against a single ID. So typically 
-      an API controller would set on up if not present and then pass it on. 
-      
-      The intention is that this id can be used for distributed logging and tracing, 
-      so that if calls cross process boundaries this ID is retained, i.e. a new 
-      executionId is only generated for the original invocation, after that it is retained 
-      and passed between services, though the current implementation (Dec 2019) 
-      doesn't really enforce this.
-
-      In ZipKin terminology this is called the traceId
-    */
-
-    @Deprecated(message = "use openTelemetryContext")
-    fun executionId(): UUID
-
+    /**
+     * Well behaved tasks should implement OpenTelemetry
+     */
     fun openTelemetryContext(): OpenTelemetryContext = OpenTelemetryContext.root
 
     /**
@@ -135,14 +121,11 @@ class SimpleExecutionContext(
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager()
-    //private val openTelemetryProvider: OpenTelemetryProvider = InMemoryOpenTelemetryProvider()
 ) : ExecutionContext, ExecutionContextModifier {
 
     override fun processManager(): ProcessManager = pm
 
     override fun executorService(): ExecutorService = executor
-
-    override fun executionId(): UUID = executionId
 
     override fun openTelemetryContext() = openTelemetryContext
 

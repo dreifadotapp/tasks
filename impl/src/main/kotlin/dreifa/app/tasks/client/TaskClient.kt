@@ -115,7 +115,7 @@ class SimpleTaskClient(registry: Registry, private val clazzLoader: ClassLoader?
             }
         } catch (e: Exception) {
             val message = LogMessage(
-                executionId = executionContext.executionId(),
+                openTelemetryContext = executionContext.openTelemetryContext(),
                 level = LogLevel.WARN,
                 body = "Task generated exception of: ${e.message}"
             )

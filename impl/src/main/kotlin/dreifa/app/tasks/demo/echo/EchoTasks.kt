@@ -148,7 +148,7 @@ class EchoToLogTask : BlockingTask<String, Unit> {
     override fun exec(ctx: ExecutionContext, input: String) {
         ctx.log(
             LogMessage(
-                executionId = ctx.executionId(),
+                openTelemetryContext = ctx.openTelemetryContext(),
                 level = LogLevel.INFO,
                 body = input
             )
@@ -157,7 +157,7 @@ class EchoToLogTask : BlockingTask<String, Unit> {
 }
 
 abstract class BaseEchoAsyncTask<I, O>(registry: Registry) : AsyncTask<I, O> {
-    protected val resultChannelFactory = registry.get(AsyncResultChannelSinkFactory::class.java)
+    private val resultChannelFactory = registry.get(AsyncResultChannelSinkFactory::class.java)
 
     protected fun submitResultWithDelay(
         ctx: ExecutionContext,

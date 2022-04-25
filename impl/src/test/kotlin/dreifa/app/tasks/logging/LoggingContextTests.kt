@@ -2,16 +2,17 @@ package dreifa.app.tasks.logging
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import dreifa.app.opentelemetry.OpenTelemetryContext
 import org.junit.Test
 import java.io.PrintStream
 import java.util.*
 
 class LoggingContextTests {
-    private val executionId = UUID.randomUUID()
-    private val debug = LogMessage.debug("Debug Message", executionId)
-    private val info = LogMessage.info("Info Message", executionId)
-    private val warn = LogMessage.warn("Warning Message", executionId)
-    private val error = LogMessage.error("Error Message", executionId)
+    private val telemetryContext = OpenTelemetryContext.root
+    private val debug = LogMessage.debug("Debug Message", telemetryContext)
+    private val info = LogMessage.info("Info Message", telemetryContext)
+    private val warn = LogMessage.warn("Warning Message", telemetryContext)
+    private val error = LogMessage.error("Error Message", telemetryContext)
 
     @Test
     fun `should capture print stream and stored as stdout`() {

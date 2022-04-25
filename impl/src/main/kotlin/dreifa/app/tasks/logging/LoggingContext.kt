@@ -1,6 +1,7 @@
 package dreifa.app.tasks.logging
 
 import dreifa.app.helpers.random
+import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.*
 import dreifa.app.tasks.client.ClientContext
@@ -197,7 +198,7 @@ class DefaultStringLogFormatter : StringLogFormatter {
             }
             LogFormat.Full -> {
                 val buffer = StringBuilder()
-                buffer.append("level=${msg.level}, message=${msg.body}, executionId=${msg.executionId}")
+                buffer.append("level=${msg.level}, message=${msg.body}, traceId=${msg.openTelemetryContext.traceId}")
                 buffer.append(", timestamp=${msg.timestamp}")
                 buffer.toString()
             }
@@ -209,17 +210,8 @@ class DefaultStringLogFormatter : StringLogFormatter {
  * The common attributes in a single log message
  */
 data class LogMessage(
-    /*
-     * Every log message is linked to an executionId. The key principle
-     * is that for a set of related task they are linked by a single executionId,
-     * for example if a higher level service needed to run TaskA, TaskB and TaskC in
-     * order, it would link them with the same executionId
-     *
-     * This is analagous to the concept of the 'traceId' in Zipkin
-     *
-     * not sure this is a good name :(
-     */
-    val executionId: UUID,
+
+    val openTelemetryContext: OpenTelemetryContext,
 
     val level: LogLevel,
 
@@ -227,26 +219,38 @@ data class LogMessage(
     val timestamp: Long = System.currentTimeMillis(),
 ) {
     companion object {
-        fun debug(body: String, executionId: UUID = UUID.randomUUID()): LogMessage = LogMessage(
-            executionId = executionId,
+        fun debug(
+            body: String,
+            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root
+        ): LogMessage = LogMessage(
+            openTelemetryContext = openTelemetryContext,
             body = body,
             level = LogLevel.DEBUG
         )
 
-        fun info(body: String, executionId: UUID = UUID.randomUUID()): LogMessage = LogMessage(
-            executionId = executionId,
+        fun info(
+            body: String,
+            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root
+        ): LogMessage = LogMessage(
+            openTelemetryContext = openTelemetryContext,
             body = body,
             level = LogLevel.INFO
         )
 
-        fun warn(body: String, executionId: UUID = UUID.randomUUID()): LogMessage = LogMessage(
-            executionId = executionId,
+        fun warn(
+            body: String,
+            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root
+        ): LogMessage = LogMessage(
+            openTelemetryContext = openTelemetryContext,
             body = body,
             level = LogLevel.WARN
         )
 
-        fun error(body: String, executionId: UUID = UUID.randomUUID()): LogMessage = LogMessage(
-            executionId = executionId,
+        fun error(
+            body: String,
+            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root
+        ): LogMessage = LogMessage(
+            openTelemetryContext = openTelemetryContext,
             body = body,
             level = LogLevel.ERROR
         )

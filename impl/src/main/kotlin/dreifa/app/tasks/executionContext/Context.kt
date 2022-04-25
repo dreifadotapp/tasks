@@ -1,5 +1,6 @@
 package dreifa.app.tasks.executionContext
 
+import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.tasks.logging.*
 import dreifa.app.tasks.processManager.ProcessManager
 import java.util.*
@@ -39,8 +40,11 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
 
       In ZipKin terminology this is called the traceId
     */
+
+    @Deprecated(message = "use openTelemetryContext")
     fun executionId(): UUID
 
+    fun openTelemetryContext(): OpenTelemetryContext = OpenTelemetryContext.root
 
     /**
      * Instance qualifier - if multiple services are deployed to a server,
@@ -64,6 +68,8 @@ interface ExecutionContextModifier {
     fun withLoggingProducerContext(newLoggingProducerContext: LoggingProducerContext): ExecutionContext
 
     fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext
+
+    fun withOpenTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext
 }
 
 /**
@@ -75,7 +81,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
         working = SimpleExecutionContext(
             loggingProducerContext = working,
-            executionId = working.executionId(),
+            openTelemetryContext = working.openTelemetryContext(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = instanceQualifier
@@ -86,7 +92,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     override fun withLoggingProducerContext(newLoggingProducerContext: LoggingProducerContext): ExecutionContext {
         working = SimpleExecutionContext(
             loggingProducerContext = newLoggingProducerContext,
-            executionId = working.executionId(),
+            openTelemetryContext = working.openTelemetryContext(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier()
@@ -98,7 +104,18 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         val logProducerContext = LoggingProducerToConsumer(logging)
         working = SimpleExecutionContext(
             loggingProducerContext = logProducerContext,
-            executionId = working.executionId(),
+            openTelemetryContext = working.openTelemetryContext(),
+            executor = working.executorService(),
+            pm = working.processManager(),
+            instanceQualifier = working.instanceQualifier()
+        )
+        return working
+    }
+
+    override fun withOpenTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext {
+        working = SimpleExecutionContext(
+            loggingProducerContext = working,
+            openTelemetryContext = openTelemetryContext,
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier()
@@ -114,6 +131,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
 class SimpleExecutionContext(
     private val loggingProducerContext: LoggingProducerContext = ConsoleLoggingProducerContext(),
     private val executionId: UUID = UUID.randomUUID(),
+    private val openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root,
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager()
@@ -125,6 +143,8 @@ class SimpleExecutionContext(
     override fun executorService(): ExecutorService = executor
 
     override fun executionId(): UUID = executionId
+
+    override fun openTelemetryContext() = openTelemetryContext
 
     override fun instanceQualifier(): String? = instanceQualifier
 
@@ -144,6 +164,10 @@ class SimpleExecutionContext(
 
     override fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext {
         return DefaultExecutionContextModifier(this).withInMemoryLogging(logging)
+    }
+
+    override fun withOpenTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withOpenTelemetryContext(openTelemetryContext)
     }
 
 }

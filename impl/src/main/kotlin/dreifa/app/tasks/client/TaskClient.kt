@@ -5,6 +5,7 @@ import dreifa.app.sis.JsonSerialiser
 import dreifa.app.tasks.*
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.tasks.logging.*
+import dreifa.app.tasks.opentelemetry.BlockingTaskOTDecorator
 import dreifa.app.types.UniqueId
 import java.lang.RuntimeException
 import kotlin.reflect.KClass
@@ -85,7 +86,7 @@ class SimpleClientContext(private val loggingChannelLocator: LoggingChannelLocat
 /**
  * Enough for unit tests and tasks running locally
  */
-class SimpleTaskClient(registry: Registry, private val clazzLoader: ClassLoader? = null) : TaskClient {
+class SimpleTaskClient(private val registry: Registry, private val clazzLoader: ClassLoader? = null) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
     private val serialiser = JsonSerialiser(clazzLoader)
     private val logChannelLocatorFactory =
@@ -97,31 +98,34 @@ class SimpleTaskClient(registry: Registry, private val clazzLoader: ClassLoader?
         input: I,
         outputClazz: KClass<O>
     ): O {
-        @Suppress("UNCHECKED_CAST")
-        val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
 
         // hook in logging producer / consumer pair
         val loggingConsumerContext = logChannelLocatorFactory.consumer(ctx.logChannelLocator())
         val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
         val executionContext = SimpleExecutionContext(producerContext)
 
-        try {
-            return if (task is NotRemotableTask) {
-                task.exec(executionContext, input)
-            } else {
-                // note, force serialisation / de-serialisation locally to catch any problems early
-                val result = task.exec(executionContext, roundTripInput(input))
-                roundTripOutput(result)
-            }
-        } catch (e: Exception) {
-            val message = LogMessage(
-                openTelemetryContext = executionContext.openTelemetryContext(),
-                level = LogLevel.WARN,
-                body = "Task generated exception of: ${e.message}"
-            )
-            loggingConsumerContext.acceptLog(message)
-            throw e
-        }
+        @Suppress("UNCHECKED_CAST")
+        val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
+        val decorated = BlockingTaskOTDecorator(registry, task)
+        return decorated.exec(executionContext,input)
+
+//        try {
+//            return if (task is NotRemotableTask) {
+//                task.exec(executionContext, input)
+//            } else {
+//                // note, force serialisation / de-serialisation locally to catch any problems early
+//                val result = task.exec(executionContext, roundTripInput(input))
+//                roundTripOutput(result)
+//            }
+//        } catch (e: Exception) {
+//            val message = LogMessage(
+//                openTelemetryContext = executionContext.openTelemetryContext(),
+//                level = LogLevel.WARN,
+//                body = "Task generated exception of: ${e.message}"
+//            )
+//            loggingConsumerContext.acceptLog(message)
+//            throw e
+//        }
     }
 
     private fun <I : Any> roundTripInput(input: I): I {

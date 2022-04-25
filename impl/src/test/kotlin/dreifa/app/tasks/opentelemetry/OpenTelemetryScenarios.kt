@@ -5,7 +5,16 @@ import com.natpryce.hamkrest.equalTo
 import dreifa.app.opentelemetry.ZipKinOpenTelemetryProvider
 import dreifa.app.opentelemetry.analyser
 import dreifa.app.registry.Registry
+import dreifa.app.tasks.TaskFactory
+import dreifa.app.tasks.client.SimpleClientContext
+import dreifa.app.tasks.client.SimpleTaskClient
+import dreifa.app.tasks.demo.DemoTasks
+import dreifa.app.tasks.demo.echo.EchoTasks
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
+import dreifa.app.tasks.logging.DefaultLoggingChannelFactory
+import dreifa.app.tasks.logging.InMemoryLoggingRepo
+import dreifa.app.tasks.logging.LoggingChannelLocator
+import dreifa.app.tasks.logging.LoggingReaderFactory
 import io.opentelemetry.api.trace.Tracer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
@@ -13,6 +22,13 @@ import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OpenTelemetryScenarios {
+    //private val registry = Registry()
+    private val taskFactory = TaskFactory().register(DemoTasks()).register(EchoTasks())
+    //private val logChannelFactory = DefaultLoggingChannelFactory(registry)
+
+//    init {
+//        registry.store(taskFactory).store(logChannelFactory)
+//    }
 
     @Test
     fun `should do something`() {
@@ -33,6 +49,63 @@ class OpenTelemetryScenarios {
         assertThat(spanAnalyser.name , equalTo("EchoStringTask"))
     }
 
+    @Test
+    fun `should create new span when calling task client`() {
+        val (reg, _, _) = init()
+        val clientContext = SimpleClientContext()
+
+        // create an OpenTelemetry context
+
+        val taskClient = SimpleTaskClient(reg)
+        val result = taskClient.execBlocking(
+            clientContext,
+            "dreifa.app.tasks.demo.echo.EchoStringTask",
+            "Hello, world",
+            String::class
+        )
+
+        // 3. verify
+        //val spansAnalyser = provider.spans().analyser()
+        //assertThat(spansAnalyser.traceIds().size, equalTo(1))
+        //assertThat(spansAnalyser.spanIds().size, equalTo(1))
+
+    }
+
+    @Test
+    fun `should create new span when calling failing task via task client`() {
+        val (reg, _, _) = init()
+        val clientContext = SimpleClientContext()
+
+        // create an OpenTelemetry context
+
+        val taskClient = SimpleTaskClient(reg)
+        try {
+            taskClient.execBlocking(
+                clientContext,
+                "dreifa.app.tasks.demo.ExceptionGeneratingBlockingTask",
+                "This will create an Exception",
+                String::class
+            )
+        }
+        catch (ignoreMe : Exception){}
+
+        val f = reg.get(LoggingReaderFactory::class.java)
+        println(f)
+
+        val reader = f.query(clientContext.logChannelLocator())
+        reader.messages().forEach { println(it) }
+        //f.query(LoggingChannelLocator)
+
+        // 3. verify
+        //val spansAnalyser = provider.spans().analyser()
+        //assertThat(spansAnalyser.traceIds().size, equalTo(1))
+        //assertThat(spansAnalyser.spanIds().size, equalTo(1))
+
+    }
+    //
+    // ExceptionGeneratingBlockingTask
+
+
     @AfterAll
     fun `wait for zipkin`() {
         // give it time to flush to zipkin before closing
@@ -43,7 +116,13 @@ class OpenTelemetryScenarios {
         val reg = Registry()
         val provider = ZipKinOpenTelemetryProvider()
         val tracer = provider.sdk().getTracer("OpenTelemetryScenarios")
-        reg.store(provider).store(tracer)
+        val inMemoryLogging = InMemoryLoggingRepo()
+        reg.store(provider).store(tracer).store(taskFactory).store(inMemoryLogging)
+
+        // is this needed ?
+        val logChannelFactory = DefaultLoggingChannelFactory(reg)
+        reg.store(logChannelFactory)
+
         return Triple(reg, provider, tracer)
     }
 }

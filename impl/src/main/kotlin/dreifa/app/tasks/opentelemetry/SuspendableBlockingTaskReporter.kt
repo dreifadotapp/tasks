@@ -54,6 +54,7 @@ abstract class SuspendableBlockingTaskReporter<in I, out O>(reg: Registry) : Blo
     abstract suspend fun doExecWithTelemetry(ctx: ExecutionContext, input: I): O
 }
 
+
 class EchoStringTask(reg: Registry) : SuspendableBlockingTaskReporter<String, String>(reg) {
     override suspend fun doExecWithTelemetry(ctx: ExecutionContext, input: String): String {
         return input

@@ -5,7 +5,7 @@ dependencies {
     // The decision is a a little arbitrary, but key deps are published with compile scope.
     //
 
-    implementation("com.github.jitpack:gradle-simple:1.0")
+    implementation "com.github.jitpack:gradle-simple:1.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"

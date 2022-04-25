@@ -182,19 +182,19 @@ class TaskFactoryTest {
         assertThat(query.result<Int>(channelId) as Success<Int>, equalTo(Success(100)))
     }
 
-//    @Test
-//    fun `should load Tasks in custom classloader`() {
-//        val clazzLoader = terraFormTasksClassLoader()
-//        val factory = TaskFactory(Registry(),clazzLoader)
-//
-//        factory.register("dreifa.app.terraform.tasks.TFTasks")
-//        assertThat(factory.list(), !isEmpty)
-//
-//        @Suppress("UNCHECKED_CAST")
-//        val echoTask = factory.createInstance("dreifa.app.terraform.tasks.TFEchoTask") as BlockingTask<String, String>
-//        val result = echoTask.exec(SimpleExecutionContext(), "Foo")
-//        assertThat(result, equalTo("foo"))
-//    }
+    @Test
+    fun `should load Tasks in custom classloader`() {
+        val clazzLoader = terraFormTasksClassLoader()
+        val factory = TaskFactory(Registry(),clazzLoader)
+
+        factory.register("dreifa.app.terraform.tasks.TFTasks")
+        assertThat(factory.list(), !isEmpty)
+
+        @Suppress("UNCHECKED_CAST")
+        val echoTask = factory.createInstance("dreifa.app.terraform.tasks.TFEchoTask") as BlockingTask<String, String>
+        val result = echoTask.exec(SimpleExecutionContext(), "Foo")
+        assertThat(result, equalTo("foo"))
+    }
 
     @Test
     fun `should throw exception if custom classloader not provided`() {

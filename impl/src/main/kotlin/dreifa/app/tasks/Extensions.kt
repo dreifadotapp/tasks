@@ -10,4 +10,3 @@ fun List<LogMessage>.hasMessage(level: LogLevel, body: String): Boolean {
 fun List<LogMessage>.doesNotHaveMessage(level: LogLevel, body: String): Boolean {
     return this.none { (it.level == level) && it.body == body }
 }
-

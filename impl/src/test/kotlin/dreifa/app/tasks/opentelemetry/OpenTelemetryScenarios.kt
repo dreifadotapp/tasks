@@ -42,7 +42,7 @@ class OpenTelemetryScenarios {
     private fun init(): Triple<Registry, ZipKinOpenTelemetryProvider, Tracer> {
         val reg = Registry()
         val provider = ZipKinOpenTelemetryProvider()
-        val tracer = provider.provider().getTracer("OpenTelemetryScenarios")
+        val tracer = provider.sdk().getTracer("OpenTelemetryScenarios")
         reg.store(provider).store(tracer)
         return Triple(reg, provider, tracer)
     }

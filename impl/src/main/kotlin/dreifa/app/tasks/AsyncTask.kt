@@ -4,7 +4,6 @@ import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.types.UniqueId
 
-
 /**
  * The three basic result types for onSuccess, onFail
  * and onTimeout

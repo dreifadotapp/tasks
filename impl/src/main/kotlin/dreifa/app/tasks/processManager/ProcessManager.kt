@@ -3,7 +3,6 @@ package dreifa.app.tasks.processManager
 import dreifa.app.registry.Registry
 import java.util.*
 
-
 /*
  Some workarounds to the ProcessManagerInternal. Really should fix the ProcessManagerInternal
  which has got more complicated than necessary.
@@ -131,5 +130,3 @@ class ProcessManager(registry: Registry = Registry()) {
         return processManager.allProcesses()
     }
 }
-
-

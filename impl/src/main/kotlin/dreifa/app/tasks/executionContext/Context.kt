@@ -52,25 +52,6 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
      */
     fun instanceQualifier(): String?
 
-    /**
-     * A short cut for logging that pulls in all the information
-     * on the ExecutionContext
-     */
-    @Deprecated(message = "this is just confusing - better to have an explicit builder for LogMessage")
-    fun logIt(body: String, level: LogLevel = LogLevel.INFO) {
-        val msg = LogMessage(
-            executionId = this.executionId(),
-            body = body,
-            level = level
-        )
-        log(msg)
-    }
-
-    // convenience methods - gives standard PrintStream style
-    // access to the LoggingConsumerContext
-    //fun stdout(): PrintStream
-    //fun stderr(): PrintStream
-
 }
 
 /**

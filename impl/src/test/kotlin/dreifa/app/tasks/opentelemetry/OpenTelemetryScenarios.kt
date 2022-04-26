@@ -55,11 +55,12 @@ class OpenTelemetryScenarios {
     @Test
     fun `should create new span when calling task client`() {
         val (reg, provider, tracer) = init()
+        val taskClient = SimpleTaskClient(reg)
+
         val outerSpan = outerSpan(tracer)
         val traceCtx = OpenTelemetryContext.fromSpan(outerSpan)
         val clientContext = SimpleClientContext(telemetryContext = traceCtx)
 
-        val taskClient = SimpleTaskClient(reg)
         taskClient.execBlocking(
             clientContext,
             "dreifa.app.tasks.demo.echo.EchoStringTask",
@@ -72,23 +73,22 @@ class OpenTelemetryScenarios {
         val spansAnalyser = provider.spans().analyser()
         assertThat(spansAnalyser.traceIds().size, equalTo(1))
         assertThat(spansAnalyser.spanIds().size, equalTo(2))
-
-        val taskSpan = spansAnalyser.firstSpan()    // todo - SpansAnalyser needs better selectors
+        val taskSpan = spansAnalyser.secondSpan()
         assertThat(taskSpan.name, equalTo("EchoStringTask"))
         assertThat(taskSpan.kind, equalTo(SpanKind.SERVER))
         assert(taskSpan.parentSpanId != Span.getInvalid().toString())
         assertThat(taskSpan.status, equalTo(StatusData.ok()))
-
     }
 
     @Test
     fun `should create new span when calling failing task via task client`() {
-        val (reg, _, _) = init()
-        val clientContext = SimpleClientContext()
-
-        // create an OpenTelemetry context
-
+        val (reg, provider, tracer) = init()
         val taskClient = SimpleTaskClient(reg)
+
+        val outerSpan = outerSpan(tracer)
+        val traceCtx = OpenTelemetryContext.fromSpan(outerSpan)
+        val clientContext = SimpleClientContext(telemetryContext = traceCtx)
+
         try {
             taskClient.execBlocking(
                 clientContext,
@@ -98,23 +98,24 @@ class OpenTelemetryScenarios {
             )
         } catch (ignoreMe: Exception) {
         }
+        completeSpan(outerSpan)
 
-        val f = reg.get(LoggingReaderFactory::class.java)
-        println(f)
 
-        val reader = f.query(clientContext.logChannelLocator())
-        reader.messages().forEach { println(it) }
-        //f.query(LoggingChannelLocator)
+        // 3. verify logging channel
+        val logReaderFactory = reg.get(LoggingReaderFactory::class.java)
+        val reader = logReaderFactory.query(clientContext.logChannelLocator())
+        assertThat( reader.messages()[0].body, equalTo("Task 'ExceptionGeneratingBlockingTask' threw exception: 'This will create an Exception' [RuntimeException]"))
 
-        // 3. verify
-        //val spansAnalyser = provider.spans().analyser()
-        //assertThat(spansAnalyser.traceIds().size, equalTo(1))
-        //assertThat(spansAnalyser.spanIds().size, equalTo(1))
-
+        // 4. verify telemetry
+        val spansAnalyser = provider.spans().analyser()
+        assertThat(spansAnalyser.traceIds().size, equalTo(1))
+        assertThat(spansAnalyser.spanIds().size, equalTo(2))
+        val taskSpan = spansAnalyser.secondSpan()
+        assertThat(taskSpan.name, equalTo("ExceptionGeneratingBlockingTask"))
+        assertThat(taskSpan.kind, equalTo(SpanKind.SERVER))
+        assert(taskSpan.parentSpanId != Span.getInvalid().toString())
+        assertThat(taskSpan.status, equalTo(StatusData.error()))
     }
-    //
-    // ExceptionGeneratingBlockingTask
-
 
     @AfterAll
     fun `wait for zipkin`() {

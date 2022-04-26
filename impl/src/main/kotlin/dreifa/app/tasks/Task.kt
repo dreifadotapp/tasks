@@ -11,7 +11,7 @@ interface Task {
      * Every Task should have a name for logging and display in UIs.
      * The convention is that the class names should be clear and generally unambiguous,
      * i.e. no need to qualify by package name, and therefore
-     * there is no need to reimplement this method.
+     * there is no generally no need to reimplement this method.
      */
     fun name(): String = this::class.simpleName!!
 }

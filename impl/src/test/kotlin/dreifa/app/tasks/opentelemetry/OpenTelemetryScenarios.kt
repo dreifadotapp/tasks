@@ -2,6 +2,7 @@ package dreifa.app.tasks.opentelemetry
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.opentelemetry.ZipKinOpenTelemetryProvider
 import dreifa.app.opentelemetry.analyser
 import dreifa.app.registry.Registry
@@ -15,23 +16,25 @@ import dreifa.app.tasks.logging.DefaultLoggingChannelFactory
 import dreifa.app.tasks.logging.InMemoryLoggingRepo
 import dreifa.app.tasks.logging.LoggingChannelLocator
 import dreifa.app.tasks.logging.LoggingReaderFactory
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.context.Context
+import io.opentelemetry.extension.kotlin.asContextElement
+import io.opentelemetry.sdk.trace.data.StatusData
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OpenTelemetryScenarios {
-    //private val registry = Registry()
     private val taskFactory = TaskFactory().register(DemoTasks()).register(EchoTasks())
-    //private val logChannelFactory = DefaultLoggingChannelFactory(registry)
-
-//    init {
-//        registry.store(taskFactory).store(logChannelFactory)
-//    }
 
     @Test
-    fun `should do something`() {
+    fun `should create new span`() {
         // 1. setup
         val (reg, provider, _) = init()
 
@@ -46,28 +49,35 @@ class OpenTelemetryScenarios {
         assertThat(spansAnalyser.spanIds().size, equalTo(1))
 
         val spanAnalyser = spansAnalyser.firstSpan().analyser()
-        assertThat(spanAnalyser.name , equalTo("EchoStringTask"))
+        assertThat(spanAnalyser.name, equalTo("EchoStringTask"))
     }
 
     @Test
     fun `should create new span when calling task client`() {
-        val (reg, _, _) = init()
-        val clientContext = SimpleClientContext()
-
-        // create an OpenTelemetry context
+        val (reg, provider, tracer) = init()
+        val outerSpan = outerSpan(tracer)
+        val traceCtx = OpenTelemetryContext.fromSpan(outerSpan)
+        val clientContext = SimpleClientContext(telemetryContext = traceCtx)
 
         val taskClient = SimpleTaskClient(reg)
-        val result = taskClient.execBlocking(
+        taskClient.execBlocking(
             clientContext,
             "dreifa.app.tasks.demo.echo.EchoStringTask",
             "Hello, world",
             String::class
         )
+        completeSpan(outerSpan)
 
         // 3. verify
-        //val spansAnalyser = provider.spans().analyser()
-        //assertThat(spansAnalyser.traceIds().size, equalTo(1))
-        //assertThat(spansAnalyser.spanIds().size, equalTo(1))
+        val spansAnalyser = provider.spans().analyser()
+        assertThat(spansAnalyser.traceIds().size, equalTo(1))
+        assertThat(spansAnalyser.spanIds().size, equalTo(2))
+
+        val taskSpan = spansAnalyser.firstSpan()    // todo - SpansAnalyser needs better selectors
+        assertThat(taskSpan.name, equalTo("EchoStringTask"))
+        assertThat(taskSpan.kind, equalTo(SpanKind.SERVER))
+        assert(taskSpan.parentSpanId != Span.getInvalid().toString())
+        assertThat(taskSpan.status, equalTo(StatusData.ok()))
 
     }
 
@@ -86,8 +96,8 @@ class OpenTelemetryScenarios {
                 "This will create an Exception",
                 String::class
             )
+        } catch (ignoreMe: Exception) {
         }
-        catch (ignoreMe : Exception){}
 
         val f = reg.get(LoggingReaderFactory::class.java)
         println(f)
@@ -111,6 +121,18 @@ class OpenTelemetryScenarios {
         // give it time to flush to zipkin before closing
         Thread.sleep(50)
     }
+
+    private fun outerSpan(tracer: Tracer): Span {
+        return tracer.spanBuilder("DummyClient")
+            .setSpanKind(SpanKind.CLIENT)
+            .startSpan()
+    }
+
+    private fun completeSpan(span: Span) {
+        span.setStatus(StatusCode.OK)
+        span.end()
+    }
+
 
     private fun init(): Triple<Registry, ZipKinOpenTelemetryProvider, Tracer> {
         val reg = Registry()

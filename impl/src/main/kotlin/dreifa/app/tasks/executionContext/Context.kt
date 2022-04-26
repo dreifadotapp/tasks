@@ -3,7 +3,6 @@ package dreifa.app.tasks.executionContext
 import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.tasks.logging.*
 import dreifa.app.tasks.processManager.ProcessManager
-import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -30,7 +29,7 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
     /**
      * Well behaved tasks should implement OpenTelemetry
      */
-    fun openTelemetryContext(): OpenTelemetryContext = OpenTelemetryContext.root
+    fun telemetryContext(): OpenTelemetryContext = OpenTelemetryContext.root
 
     /**
      * Instance qualifier - if multiple services are deployed to a server,
@@ -67,7 +66,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     override fun withInstanceQualifier(instanceQualifier: String?): ExecutionContext {
         working = SimpleExecutionContext(
             loggingProducerContext = working,
-            openTelemetryContext = working.openTelemetryContext(),
+            telemetryContext = working.telemetryContext(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = instanceQualifier
@@ -78,7 +77,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     override fun withLoggingProducerContext(newLoggingProducerContext: LoggingProducerContext): ExecutionContext {
         working = SimpleExecutionContext(
             loggingProducerContext = newLoggingProducerContext,
-            openTelemetryContext = working.openTelemetryContext(),
+            telemetryContext = working.telemetryContext(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier()
@@ -90,7 +89,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         val logProducerContext = LoggingProducerToConsumer(logging)
         working = SimpleExecutionContext(
             loggingProducerContext = logProducerContext,
-            openTelemetryContext = working.openTelemetryContext(),
+            telemetryContext = working.telemetryContext(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier()
@@ -101,7 +100,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
     override fun withOpenTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext {
         working = SimpleExecutionContext(
             loggingProducerContext = working,
-            openTelemetryContext = openTelemetryContext,
+            telemetryContext = openTelemetryContext,
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier()
@@ -116,8 +115,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
  */
 class SimpleExecutionContext(
     private val loggingProducerContext: LoggingProducerContext = ConsoleLoggingProducerContext(),
-    private val executionId: UUID = UUID.randomUUID(),
-    private val openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root,
+    private val telemetryContext: OpenTelemetryContext = OpenTelemetryContext.root,
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager()
@@ -127,7 +125,7 @@ class SimpleExecutionContext(
 
     override fun executorService(): ExecutorService = executor
 
-    override fun openTelemetryContext() = openTelemetryContext
+    override fun telemetryContext() = telemetryContext
 
     override fun instanceQualifier(): String? = instanceQualifier
 

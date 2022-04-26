@@ -1,5 +1,7 @@
 package dreifa.app.tasks.opentelemetry
 
+import dreifa.app.opentelemetry.ContextHelper
+import dreifa.app.opentelemetry.OpenTelemetryProvider
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
@@ -9,7 +11,6 @@ import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
-import io.opentelemetry.context.Context
 import io.opentelemetry.extension.kotlin.asContextElement
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -17,11 +18,13 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: BlockingTask<I, O>) : BlockingTask<I, O> {
     private val tracer = reg.getOrNull(Tracer::class.java)
+    private val provider = reg.getOrNull(OpenTelemetryProvider::class.java)
 
     override fun exec(ctx: ExecutionContext, input: I): O {
-        if (tracer != null) {
+        if (tracer != null && provider != null) {
             return runBlocking {
-                withContext(Context.current().asContextElement()) {
+                val helper = ContextHelper(provider)
+                withContext(helper.createContext(ctx.telemetryContext()).asContextElement()) {
                     val span = startSpan()
                     try {
                         val result = task.exec(ctx, input)
@@ -55,8 +58,8 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
 
 
     private fun startSpan(): Span {
-        return tracer!!.spanBuilder(this.name())
-            .setSpanKind(SpanKind.CLIENT)
+        return tracer!!.spanBuilder(task.name())
+            .setSpanKind(SpanKind.SERVER)
             .startSpan()
             .setAttribute("client.attr", "foo")
     }
@@ -75,7 +78,7 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
     private fun reportExceptionToClient(ctx: ExecutionContext, ex: Throwable) {
         try {
             val message = LogMessage(
-                openTelemetryContext = ctx.openTelemetryContext(),
+                openTelemetryContext = ctx.telemetryContext(),
                 level = LogLevel.WARN,
                 body = "Task '${task.name()}' threw exception: '${ex.message}' [${ex::class.simpleName}]"
             )

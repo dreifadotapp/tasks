@@ -37,8 +37,7 @@ class SimpleTaskClient(private val registry: Registry, private val clazzLoader: 
             // TODO - should we simply be throwing an Exception here ?
             //        it makes no sense to call a NonRemotable task via the TaskClient
             decorated.exec(executionContext, input)
-        }
-        else {
+        } else {
             roundTripOutput(decorated.exec(executionContext, roundTripInput(input)))
         }
     }
@@ -83,8 +82,11 @@ class SimpleTaskClient(private val registry: Registry, private val clazzLoader: 
         // hook in logging producer / consumer pair
         val loggingConsumerContext = logChannelLocatorFactory.consumer(ctx.logChannelLocator())
         val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
-        val executionContext = SimpleExecutionContext(producerContext)
-        return executionContext
+
+        return SimpleExecutionContext(
+            loggingProducerContext = producerContext,
+            telemetryContext = ctx.telemetryContext()
+        )
     }
 
     private fun <I : Any> roundTripInput(input: I): I {

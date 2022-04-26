@@ -148,7 +148,7 @@ class EchoToLogTask : BlockingTask<String, Unit> {
     override fun exec(ctx: ExecutionContext, input: String) {
         ctx.log(
             LogMessage(
-                openTelemetryContext = ctx.openTelemetryContext(),
+                openTelemetryContext = ctx.telemetryContext(),
                 level = LogLevel.INFO,
                 body = input
             )

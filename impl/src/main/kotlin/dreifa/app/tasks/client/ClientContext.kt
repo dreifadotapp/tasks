@@ -1,5 +1,6 @@
 package dreifa.app.tasks.client
 
+import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.tasks.logging.LoggingChannelLocator
 
 /**
@@ -36,5 +37,10 @@ interface ClientContext {
      * How to be sent back log messages
      */
     fun logChannelLocator(): LoggingChannelLocator
+
+    /**
+     * Propagate OpenTelemetry
+     */
+    fun telemetryContext () : OpenTelemetryContext
 
 }

@@ -1,6 +1,7 @@
 package dreifa.app.tasks.executionContext
 
 import dreifa.app.opentelemetry.OpenTelemetryContext
+import dreifa.app.tasks.client.CorrelationContexts
 import dreifa.app.tasks.logging.*
 import dreifa.app.tasks.processManager.ProcessManager
 import java.util.concurrent.ExecutorService
@@ -40,6 +41,8 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
      * server based deploy is a single service per VM / container.
      */
     fun instanceQualifier(): String?
+
+    fun correlation(): CorrelationContexts = CorrelationContexts.empty()
 
 }
 
@@ -116,6 +119,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
 class SimpleExecutionContext(
     private val loggingProducerContext: LoggingProducerContext = ConsoleLoggingProducerContext(),
     private val telemetryContext: OpenTelemetryContext = OpenTelemetryContext.root,
+    private val correlation: CorrelationContexts = CorrelationContexts.empty(),
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),
     private val pm: ProcessManager = ProcessManager()
@@ -126,6 +130,8 @@ class SimpleExecutionContext(
     override fun executorService(): ExecutorService = executor
 
     override fun telemetryContext() = telemetryContext
+
+    override fun correlation(): CorrelationContexts = correlation
 
     override fun instanceQualifier(): String? = instanceQualifier
 

@@ -7,6 +7,7 @@ import dreifa.app.opentelemetry.ZipKinOpenTelemetryProvider
 import dreifa.app.opentelemetry.analyser
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.TaskFactory
+import dreifa.app.tasks.client.CorrelationContexts
 import dreifa.app.tasks.client.SimpleClientContext
 import dreifa.app.tasks.client.SimpleTaskClient
 import dreifa.app.tasks.demo.DemoTasks
@@ -14,17 +15,13 @@ import dreifa.app.tasks.demo.echo.EchoTasks
 import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.tasks.logging.DefaultLoggingChannelFactory
 import dreifa.app.tasks.logging.InMemoryLoggingRepo
-import dreifa.app.tasks.logging.LoggingChannelLocator
 import dreifa.app.tasks.logging.LoggingReaderFactory
+import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
-import io.opentelemetry.context.Context
-import io.opentelemetry.extension.kotlin.asContextElement
 import io.opentelemetry.sdk.trace.data.StatusData
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -100,11 +97,13 @@ class OpenTelemetryScenarios {
         }
         completeSpan(outerSpan)
 
-
         // 3. verify logging channel
         val logReaderFactory = reg.get(LoggingReaderFactory::class.java)
         val reader = logReaderFactory.query(clientContext.logChannelLocator())
-        assertThat( reader.messages()[0].body, equalTo("Task 'ExceptionGeneratingBlockingTask' threw exception: 'This will create an Exception' [RuntimeException]"))
+        assertThat(
+            reader.messages()[0].body,
+            equalTo("Task 'ExceptionGeneratingBlockingTask' threw exception: 'This will create an Exception' [RuntimeException]")
+        )
 
         // 4. verify telemetry
         val spansAnalyser = provider.spans().analyser()
@@ -115,6 +114,39 @@ class OpenTelemetryScenarios {
         assertThat(taskSpan.kind, equalTo(SpanKind.SERVER))
         assert(taskSpan.parentSpanId != Span.getInvalid().toString())
         assertThat(taskSpan.status, equalTo(StatusData.error()))
+    }
+
+    @Test
+    fun `should include correlation data in telemetry`() {
+        val (reg, provider, tracer) = init()
+        val taskClient = SimpleTaskClient(reg)
+
+        val outerSpan = outerSpan(tracer)
+        val traceCtx = OpenTelemetryContext.fromSpan(outerSpan)
+        val correlation = CorrelationContexts.single("testid", "abc123")
+        val clientContext = SimpleClientContext(telemetryContext = traceCtx, correlation = correlation)
+
+        taskClient.execBlocking(
+            clientContext,
+            "dreifa.app.tasks.demo.echo.EchoStringTask",
+            "Hello, world",
+            String::class
+        )
+        completeSpan(outerSpan)
+
+        // 3. verify
+        val spansAnalyser = provider.spans().analyser()
+        assertThat(spansAnalyser.traceIds().size, equalTo(1))
+        assertThat(spansAnalyser.spanIds().size, equalTo(2))
+        val clientSpan = spansAnalyser.firstSpan()
+        assertThat(clientSpan.name, equalTo("DummyClient"))
+        val taskSpan = spansAnalyser.secondSpan()
+        assertThat(taskSpan.name, equalTo("EchoStringTask"))
+        assertThat(taskSpan.kind, equalTo(SpanKind.SERVER))
+        assert(taskSpan.parentSpanId != Span.getInvalid().toString())
+        assertThat(taskSpan.status, equalTo(StatusData.ok()))
+        assertThat(taskSpan.attributes.size(), equalTo(1))
+        assertThat(taskSpan.attributes.get(AttributeKey.stringKey("dreifa.correlation.testid")), equalTo("abc123"))
     }
 
     @AfterAll

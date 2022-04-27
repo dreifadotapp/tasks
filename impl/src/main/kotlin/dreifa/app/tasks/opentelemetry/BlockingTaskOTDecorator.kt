@@ -25,7 +25,7 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
             return runBlocking {
                 val helper = ContextHelper(provider)
                 withContext(helper.createContext(ctx.telemetryContext()).asContextElement()) {
-                    val span = startSpan()
+                    val span = startSpan(ctx)
                     try {
                         val result = task.exec(ctx, input)
                         completeSpan(span)
@@ -56,12 +56,14 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
         }
     }
 
-
-    private fun startSpan(): Span {
-        return tracer!!.spanBuilder(task.name())
+    private fun startSpan(ctx: ExecutionContext): Span {
+        val span = tracer!!.spanBuilder(task.name())
             .setSpanKind(SpanKind.SERVER)
             .startSpan()
-            .setAttribute("client.attr", "foo")
+        ctx.correlation().forEach {
+            span.setAttribute("dreifa.correlation.${it.type}", it.id.toString())
+        }
+        return span
     }
 
     private fun completeSpan(span: Span) {
@@ -86,5 +88,4 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
         } catch (ignoreMe: Exception) {
         }
     }
-
 }

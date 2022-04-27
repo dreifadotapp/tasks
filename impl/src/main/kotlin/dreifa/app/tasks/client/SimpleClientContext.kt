@@ -8,11 +8,13 @@ import dreifa.app.tasks.logging.LoggingChannelLocator
  */
 class SimpleClientContext(
     private val loggingChannelLocator: LoggingChannelLocator = LoggingChannelLocator.inMemory(),
-    private val telemetryContext: OpenTelemetryContext = OpenTelemetryContext.root
+    private val telemetryContext: OpenTelemetryContext = OpenTelemetryContext.root,
+    private val correlation: CorrelationContexts = CorrelationContexts.empty()
 ) :
     ClientContext {
     private val principle = NotAuthenticatedSecurityPrinciple()
     override fun securityPrinciples(): Set<SecurityPrinciple> = setOf(principle)
     override fun logChannelLocator(): LoggingChannelLocator = loggingChannelLocator
     override fun telemetryContext(): OpenTelemetryContext = telemetryContext
+    override fun correlation(): CorrelationContexts = correlation
 }

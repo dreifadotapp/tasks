@@ -1,9 +1,9 @@
 package dreifa.app.tasks.executionContext
 
 import dreifa.app.opentelemetry.OpenTelemetryContext
-import dreifa.app.tasks.client.CorrelationContexts
 import dreifa.app.tasks.logging.*
 import dreifa.app.tasks.processManager.ProcessManager
+import dreifa.app.types.CorrelationContexts
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -20,7 +20,6 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
      *  @see ProcessManager
      */
     fun processManager(): ProcessManager
-
 
     /*
       The Java ExecutorService to be used.
@@ -42,7 +41,7 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
      */
     fun instanceQualifier(): String?
 
-    fun correlation(): CorrelationContexts = CorrelationContexts.empty()
+    fun correlation(): CorrelationContexts
 
 }
 
@@ -58,6 +57,8 @@ interface ExecutionContextModifier {
     fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext
 
     fun withOpenTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext
+
+    fun withCorrelationContexts(correlationContexts: CorrelationContexts): ExecutionContext
 }
 
 /**
@@ -70,6 +71,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         working = SimpleExecutionContext(
             loggingProducerContext = working,
             telemetryContext = working.telemetryContext(),
+            correlation = working.correlation(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = instanceQualifier
@@ -81,6 +83,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         working = SimpleExecutionContext(
             loggingProducerContext = newLoggingProducerContext,
             telemetryContext = working.telemetryContext(),
+            correlation = working.correlation(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier()
@@ -93,6 +96,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         working = SimpleExecutionContext(
             loggingProducerContext = logProducerContext,
             telemetryContext = working.telemetryContext(),
+            correlation = working.correlation(),
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier()
@@ -104,6 +108,19 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         working = SimpleExecutionContext(
             loggingProducerContext = working,
             telemetryContext = openTelemetryContext,
+            correlation = working.correlation(),
+            executor = working.executorService(),
+            pm = working.processManager(),
+            instanceQualifier = working.instanceQualifier()
+        )
+        return working
+    }
+
+    override fun withCorrelationContexts(correlationContexts: CorrelationContexts): ExecutionContext {
+        working = SimpleExecutionContext(
+            loggingProducerContext = working,
+            telemetryContext = working.telemetryContext(),
+            correlation = correlationContexts,
             executor = working.executorService(),
             pm = working.processManager(),
             instanceQualifier = working.instanceQualifier()
@@ -155,6 +172,10 @@ class SimpleExecutionContext(
 
     override fun withOpenTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext {
         return DefaultExecutionContextModifier(this).withOpenTelemetryContext(openTelemetryContext)
+    }
+
+    override fun withCorrelationContexts(correlationContexts: CorrelationContexts): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withCorrelationContexts(correlationContexts)
     }
 
 }

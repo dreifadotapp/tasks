@@ -2,6 +2,7 @@ package dreifa.app.tasks.client
 
 import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.tasks.logging.LoggingChannelLocator
+import dreifa.app.types.CorrelationContexts
 
 /**
  * Enough for unit test and to communicate with tasks running locally

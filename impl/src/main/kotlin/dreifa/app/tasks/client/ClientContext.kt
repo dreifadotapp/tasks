@@ -2,6 +2,7 @@ package dreifa.app.tasks.client
 
 import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.tasks.logging.LoggingChannelLocator
+import dreifa.app.types.CorrelationContexts
 import dreifa.app.types.UniqueId
 
 /**
@@ -48,8 +49,7 @@ interface ClientContext {
      * Optionally pass some correlation information in from the client
      * This is included in the telemetry for logging and so.
      */
-    fun correlation(): CorrelationContexts = CorrelationContexts.empty()
-
+    fun correlation(): CorrelationContexts
 }
 
 /**
@@ -57,37 +57,5 @@ interface ClientContext {
  * help in determining which system generated the correlation data.
  *
  */
-data class CorrelationContext(
-    val type: String,
-    val id: UniqueId,
-    val propagate: Boolean = false
-) {
-    constructor(type: String, id: String, propagate: Boolean = false) : this(type, UniqueId(id), propagate)
 
-    override fun toString() = "$type-$id"
-}
-
-/**
- * Type safe list for simple serialisation
- */
-class CorrelationContexts(data: List<CorrelationContext>) : ArrayList<CorrelationContext>(data) {
-    companion object {
-
-        fun empty() = CorrelationContexts(emptyList())
-
-        fun listOf(vararg elements: CorrelationContext): CorrelationContexts = CorrelationContexts(elements.asList())
-
-        fun single(type: String, id: UniqueId, propagate: Boolean = false): CorrelationContexts {
-            return single(CorrelationContext(type, id, propagate))
-        }
-
-        fun single(type: String, id: String, propagate: Boolean = false): CorrelationContexts {
-            return single(CorrelationContext(type, id, propagate))
-        }
-
-        fun single(correlation: CorrelationContext): CorrelationContexts {
-            return listOf(correlation)
-        }
-    }
-}
 

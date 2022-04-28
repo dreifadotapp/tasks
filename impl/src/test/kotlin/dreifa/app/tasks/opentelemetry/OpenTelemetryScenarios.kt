@@ -7,7 +7,6 @@ import dreifa.app.opentelemetry.ZipKinOpenTelemetryProvider
 import dreifa.app.opentelemetry.analyser
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.TaskFactory
-import dreifa.app.tasks.client.CorrelationContexts
 import dreifa.app.tasks.client.SimpleClientContext
 import dreifa.app.tasks.client.SimpleTaskClient
 import dreifa.app.tasks.demo.DemoTasks
@@ -16,6 +15,7 @@ import dreifa.app.tasks.executionContext.SimpleExecutionContext
 import dreifa.app.tasks.logging.DefaultLoggingChannelFactory
 import dreifa.app.tasks.logging.InMemoryLoggingRepo
 import dreifa.app.tasks.logging.LoggingReaderFactory
+import dreifa.app.types.CorrelationContexts
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
@@ -165,7 +165,6 @@ class OpenTelemetryScenarios {
         span.setStatus(StatusCode.OK)
         span.end()
     }
-
 
     private fun init(): Triple<Registry, ZipKinOpenTelemetryProvider, Tracer> {
         val reg = Registry()

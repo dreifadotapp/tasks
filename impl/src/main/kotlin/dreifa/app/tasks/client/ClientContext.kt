@@ -51,11 +51,3 @@ interface ClientContext {
      */
     fun correlation(): CorrelationContexts
 }
-
-/**
- * A generic holder for correlation data - there is a unique id and 'type' which will
- * help in determining which system generated the correlation data.
- *
- */
-
-

@@ -27,7 +27,7 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
     fun executorService(): ExecutorService
 
     /**
-     * Well behaved tasks should implement OpenTelemetry
+     * Well-behaved tasks should implement OpenTelemetry :)
      */
     fun telemetryContext(): OpenTelemetryContext = OpenTelemetryContext.root
 

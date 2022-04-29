@@ -61,7 +61,7 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
             .setSpanKind(SpanKind.SERVER)
             .startSpan()
         ctx.correlation().forEach {
-            span.setAttribute("dreifa.correlation.${it.type}", it.id.toString())
+            span.setAttribute(it.openTelemetryAttrName, it.id.toString())
         }
         return span
     }

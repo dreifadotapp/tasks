@@ -1,6 +1,7 @@
 package dreifa.app.tasks.opentelemetry
 
 import dreifa.app.opentelemetry.ContextHelper
+import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.opentelemetry.OpenTelemetryProvider
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.BlockingTask
@@ -25,15 +26,15 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
             return runBlocking {
                 val helper = ContextHelper(provider)
                 withContext(helper.createContext(ctx.telemetryContext()).asContextElement()) {
-                    val span = startSpan(ctx)
+                    val (span,modifiedCtx) = startSpan(ctx)
                     try {
-                        val result = task.exec(ctx, input)
+                        val result = task.exec(modifiedCtx, input)
                         completeSpan(span)
                         result
                     } catch (ex: Throwable) {
                         // post the message back on the logging channel - independent of OpenTelemetry
                         withTimeoutOrNull(500L) {
-                            reportExceptionToClient(ctx, ex)
+                            reportExceptionToClient(modifiedCtx, ex)
                         }
                         // and close the span
                         completeSpan(span, ex)
@@ -56,14 +57,15 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
         }
     }
 
-    private fun startSpan(ctx: ExecutionContext): Span {
+    private fun startSpan(ctx: ExecutionContext): Pair<Span,ExecutionContext> {
         val span = tracer!!.spanBuilder(task.name())
             .setSpanKind(SpanKind.SERVER)
             .startSpan()
         ctx.correlation().forEach {
             span.setAttribute(it.openTelemetryAttrName, it.id.toString())
         }
-        return span
+        // pass on the latest telemetryContext
+        return Pair(span, ctx.withTelemetryContext(OpenTelemetryContext.fromSpan(span)))
     }
 
     private fun completeSpan(span: Span) {

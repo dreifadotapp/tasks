@@ -8,7 +8,7 @@ import java.io.PrintStream
 import java.util.*
 
 class LoggingContextTests {
-    private val telemetryContext = OpenTelemetryContext.root
+    private val telemetryContext = OpenTelemetryContext.root()
     private val debug = LogMessage.debug("Debug Message", telemetryContext)
     private val info = LogMessage.info("Info Message", telemetryContext)
     private val warn = LogMessage.warn("Warning Message", telemetryContext)

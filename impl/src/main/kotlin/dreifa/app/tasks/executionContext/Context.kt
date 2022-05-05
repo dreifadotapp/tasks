@@ -29,7 +29,7 @@ interface ExecutionContext : LoggingProducerContext, ExecutionContextModifier {
     /**
      * Well-behaved tasks should implement OpenTelemetry :)
      */
-    fun telemetryContext(): OpenTelemetryContext = OpenTelemetryContext.root
+    fun telemetryContext(): OpenTelemetryContext = OpenTelemetryContext.root()
 
     /**
      * Instance qualifier - if multiple services are deployed to a server,
@@ -135,7 +135,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
  */
 class SimpleExecutionContext(
     private val loggingProducerContext: LoggingProducerContext = ConsoleLoggingProducerContext(),
-    private val telemetryContext: OpenTelemetryContext = OpenTelemetryContext.root,
+    private val telemetryContext: OpenTelemetryContext = OpenTelemetryContext.root(),
     private val correlation: CorrelationContexts = CorrelationContexts.empty(),
     private val instanceQualifier: String? = null,
     private val executor: ExecutorService = Executors.newFixedThreadPool(10),

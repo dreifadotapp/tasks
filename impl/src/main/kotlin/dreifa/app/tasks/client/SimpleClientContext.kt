@@ -9,7 +9,7 @@ import dreifa.app.types.CorrelationContexts
  */
 class SimpleClientContext(
     private val loggingChannelLocator: LoggingChannelLocator = LoggingChannelLocator.inMemory(),
-    private val telemetryContext: OpenTelemetryContext = OpenTelemetryContext.root,
+    private val telemetryContext: OpenTelemetryContext = OpenTelemetryContext.root(),
     private val correlation: CorrelationContexts = CorrelationContexts.empty(),
     private val principles: Set<SecurityPrinciple> = setOf(NotAuthenticatedSecurityPrinciple())
 

@@ -221,7 +221,7 @@ data class LogMessage(
     companion object {
         fun debug(
             body: String,
-            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root
+            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root()
         ): LogMessage = LogMessage(
             openTelemetryContext = openTelemetryContext,
             body = body,
@@ -230,7 +230,7 @@ data class LogMessage(
 
         fun info(
             body: String,
-            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root
+            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root()
         ): LogMessage = LogMessage(
             openTelemetryContext = openTelemetryContext,
             body = body,
@@ -239,7 +239,7 @@ data class LogMessage(
 
         fun warn(
             body: String,
-            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root
+            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root()
         ): LogMessage = LogMessage(
             openTelemetryContext = openTelemetryContext,
             body = body,
@@ -248,7 +248,7 @@ data class LogMessage(
 
         fun error(
             body: String,
-            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root
+            openTelemetryContext: OpenTelemetryContext = OpenTelemetryContext.root()
         ): LogMessage = LogMessage(
             openTelemetryContext = openTelemetryContext,
             body = body,

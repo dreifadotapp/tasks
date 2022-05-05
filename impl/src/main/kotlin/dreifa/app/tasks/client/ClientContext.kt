@@ -1,6 +1,7 @@
 package dreifa.app.tasks.client
 
 import dreifa.app.opentelemetry.OpenTelemetryContext
+import dreifa.app.opentelemetry.OpenTelemetryContextDTO
 import dreifa.app.tasks.logging.LoggingChannelLocator
 import dreifa.app.types.CorrelationContexts
 
@@ -42,7 +43,7 @@ interface ClientContext : ClientContextModifier {
     /**
      * Propagate OpenTelemetry
      */
-    fun telemetryContext(): OpenTelemetryContext
+    fun telemetryContext(): OpenTelemetryContextDTO
 
     /**
      * Optionally pass some correlation information in from the client
@@ -53,16 +54,27 @@ interface ClientContext : ClientContextModifier {
 
 interface ClientContextModifier {
 
+    fun withTelemetryContext(telemetryContext: OpenTelemetryContextDTO): ClientContext
+
     fun withTelemetryContext(telemetryContext: OpenTelemetryContext): ClientContext
 
     fun withCorrelation(correlation: CorrelationContexts): ClientContext
 }
 
 class DefaultClientContextModifier(private val ctx: ClientContext) : ClientContextModifier {
-    override fun withTelemetryContext(telemetryContext: OpenTelemetryContext): ClientContext {
+    override fun withTelemetryContext(telemetryContext: OpenTelemetryContextDTO): ClientContext {
         return SimpleClientContext(
             loggingChannelLocator = ctx.logChannelLocator(),
             telemetryContext = telemetryContext,
+            correlation = ctx.correlation(),
+            principles = ctx.securityPrinciples()
+        )
+    }
+
+    override fun withTelemetryContext(telemetryContext: OpenTelemetryContext): ClientContext {
+        return SimpleClientContext(
+            loggingChannelLocator = ctx.logChannelLocator(),
+            telemetryContext = telemetryContext.dto(),
             correlation = ctx.correlation(),
             principles = ctx.securityPrinciples()
         )

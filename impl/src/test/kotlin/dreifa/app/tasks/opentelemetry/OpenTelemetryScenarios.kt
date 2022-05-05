@@ -56,7 +56,7 @@ class OpenTelemetryScenarios {
 
         val outerSpan = outerSpan(tracer)
         val traceCtx = OpenTelemetryContext.fromSpan(outerSpan)
-        val clientContext = SimpleClientContext(telemetryContext = traceCtx)
+        val clientContext = SimpleClientContext(telemetryContext = traceCtx.dto())
 
         taskClient.execBlocking(
             clientContext,
@@ -84,7 +84,7 @@ class OpenTelemetryScenarios {
 
         val outerSpan = outerSpan(tracer)
         val traceCtx = OpenTelemetryContext.fromSpan(outerSpan)
-        val clientContext = SimpleClientContext(telemetryContext = traceCtx)
+        val clientContext = SimpleClientContext(telemetryContext = traceCtx.dto())
 
         try {
             taskClient.execBlocking(
@@ -124,7 +124,7 @@ class OpenTelemetryScenarios {
         val outerSpan = outerSpan(tracer)
         val traceCtx = OpenTelemetryContext.fromSpan(outerSpan)
         val correlation = CorrelationContexts.single("testid", "abc123")
-        val clientContext = SimpleClientContext(telemetryContext = traceCtx, correlation = correlation)
+        val clientContext = SimpleClientContext(telemetryContext = traceCtx.dto(), correlation = correlation)
 
         taskClient.execBlocking(
             clientContext,

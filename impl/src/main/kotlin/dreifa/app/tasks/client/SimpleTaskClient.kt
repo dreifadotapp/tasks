@@ -85,7 +85,7 @@ class SimpleTaskClient(private val registry: Registry, private val clazzLoader: 
 
         return SimpleExecutionContext(
             loggingProducerContext = producerContext,
-            telemetryContext = ctx.telemetryContext(),
+            telemetryContext = ctx.telemetryContext().context(),
             correlation = ctx.correlation()
         )
     }

@@ -3,7 +3,6 @@ package dreifa.app.tasks.client
 import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.tasks.logging.LoggingChannelLocator
 import dreifa.app.types.CorrelationContexts
-import dreifa.app.types.UniqueId
 
 /**
  * Marker interface for any type of security (authentication & authorisation) protocol
@@ -28,7 +27,7 @@ class NotAuthenticatedSecurityPrinciple(val userName: String = "unknown") : Secu
 /**
  * The information that any client must provide
  */
-interface ClientContext {
+interface ClientContext : ClientContextModifier {
 
     /**
      * One of the security principles
@@ -50,4 +49,32 @@ interface ClientContext {
      * This is included in the telemetry for logging and so.
      */
     fun correlation(): CorrelationContexts
+}
+
+interface ClientContextModifier {
+
+    fun withTelemetryContext(telemetryContext: OpenTelemetryContext): ClientContext
+
+    fun withCorrelation(correlation: CorrelationContexts): ClientContext
+}
+
+class DefaultClientContextModifier(private val ctx: ClientContext) : ClientContextModifier {
+    override fun withTelemetryContext(telemetryContext: OpenTelemetryContext): ClientContext {
+        return SimpleClientContext(
+            loggingChannelLocator = ctx.logChannelLocator(),
+            telemetryContext = telemetryContext,
+            correlation = ctx.correlation(),
+            principles = ctx.securityPrinciples()
+        )
+    }
+
+    override fun withCorrelation(correlation: CorrelationContexts): ClientContext {
+        return SimpleClientContext(
+            loggingChannelLocator = ctx.logChannelLocator(),
+            telemetryContext = ctx.telemetryContext(),
+            correlation = correlation,
+            principles = ctx.securityPrinciples()
+        )
+    }
+
 }

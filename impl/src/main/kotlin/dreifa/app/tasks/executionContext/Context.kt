@@ -56,9 +56,9 @@ interface ExecutionContextModifier {
 
     fun withInMemoryLogging(logging: InMemoryLogging): ExecutionContext
 
-    fun withOpenTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext
+    fun withTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext
 
-    fun withCorrelationContexts(correlationContexts: CorrelationContexts): ExecutionContext
+    fun withCorrelation(correlationContexts: CorrelationContexts): ExecutionContext
 }
 
 /**
@@ -104,7 +104,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         return working
     }
 
-    override fun withOpenTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext {
+    override fun withTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext {
         working = SimpleExecutionContext(
             loggingProducerContext = working,
             telemetryContext = openTelemetryContext,
@@ -116,7 +116,7 @@ class DefaultExecutionContextModifier(original: ExecutionContext) : ExecutionCon
         return working
     }
 
-    override fun withCorrelationContexts(correlationContexts: CorrelationContexts): ExecutionContext {
+    override fun withCorrelation(correlationContexts: CorrelationContexts): ExecutionContext {
         working = SimpleExecutionContext(
             loggingProducerContext = working,
             telemetryContext = working.telemetryContext(),
@@ -170,12 +170,12 @@ class SimpleExecutionContext(
         return DefaultExecutionContextModifier(this).withInMemoryLogging(logging)
     }
 
-    override fun withOpenTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext {
-        return DefaultExecutionContextModifier(this).withOpenTelemetryContext(openTelemetryContext)
+    override fun withTelemetryContext(openTelemetryContext: OpenTelemetryContext): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withTelemetryContext(openTelemetryContext)
     }
 
-    override fun withCorrelationContexts(correlationContexts: CorrelationContexts): ExecutionContext {
-        return DefaultExecutionContextModifier(this).withCorrelationContexts(correlationContexts)
+    override fun withCorrelation(correlationContexts: CorrelationContexts): ExecutionContext {
+        return DefaultExecutionContextModifier(this).withCorrelation(correlationContexts)
     }
 
 }

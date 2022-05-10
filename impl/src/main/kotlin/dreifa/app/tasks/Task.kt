@@ -13,7 +13,7 @@ interface Task {
      * i.e. no need to qualify by package name, and therefore
      * there is no generally no need to reimplement this method.
      */
-    fun name(): String = this::class.simpleName!!
+    fun taskName(): String = this::class.simpleName!!
 }
 
 /**

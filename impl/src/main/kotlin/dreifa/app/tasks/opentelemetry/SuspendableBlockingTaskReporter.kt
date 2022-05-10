@@ -34,7 +34,7 @@ abstract class SuspendableBlockingTaskReporter<in I, out O>(reg: Registry) : Blo
     }
 
     private fun startSpan(): Span {
-        return tracer.spanBuilder(this.name())
+        return tracer.spanBuilder(this.taskName())
             .setSpanKind(SpanKind.CLIENT)
             .startSpan()
             .setAttribute("client.attr", "foo")

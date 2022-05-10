@@ -58,7 +58,7 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
     }
 
     private fun startSpan(ctx: ExecutionContext): Pair<Span,ExecutionContext> {
-        val span = tracer!!.spanBuilder(task.name())
+        val span = tracer!!.spanBuilder(task.taskName())
             .setSpanKind(SpanKind.SERVER)
             .startSpan()
         ctx.correlation().forEach {
@@ -84,7 +84,7 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
             val message = LogMessage(
                 openTelemetryContext = ctx.telemetryContext(),
                 level = LogLevel.WARN,
-                body = "Task '${task.name()}' threw exception: '${ex.message}' [${ex::class.simpleName}]"
+                body = "Task '${task.taskName()}' threw exception: '${ex.message}' [${ex::class.simpleName}]"
             )
             ctx.log(message)
         } catch (ignoreMe: Exception) {

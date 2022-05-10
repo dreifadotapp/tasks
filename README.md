@@ -40,6 +40,7 @@ As with everything in [Dreifa dot App](https://dreifa.app), this library has min
     - [Jackson](https://github.com/FasterXML/jackson) for JSON serialisation
 * The [Simple Event Store(ses)](https://github.com/dreifadotapp/simple-event-store#readme) module
 * The [Simple KV Store(sks)](https://github.com/dreifadotapp/simple-kv-store#readme) module
+* The [Open Telemetry](https://github.com/dreifadotapp/open-telemetry#readme) module
 
 ## Adding as a dependency
 Maven jars are deployed using JitPack. See releases for version details.
@@ -53,6 +54,23 @@ implementation "com.github.dreifadotapp:tasks:<release>"
 ```
 
 JitPack build status is at https://jitpack.io/com/github/dreifadotapp/tasks/$releaseTag/build.log
+
+## Testing with Open Telemetry
+
+Open Telemetry support is being added and certain test cases will produce telemetry. The telemetry will be captured
+by Zipkin if running locally. The easiest way to run Zipkin is via Docker.
+
+```bash
+docker run --rm -it --name zipkin \
+  -p 9411:9411 -d \
+  openzipkin/zipkin:latest
+```
+
+Then open the [Zipkin UI](http://localhost:9411/zipkin/).
+
+Each test run is tagged with a unique booking ref style test id. To filter on a specific
+id edit open [this link](http://localhost:9411/zipkin/?annotationQuery=dreifa.correlation.testId%3Datestid) and
+edit `atestid`
 
 ## Next Steps
 

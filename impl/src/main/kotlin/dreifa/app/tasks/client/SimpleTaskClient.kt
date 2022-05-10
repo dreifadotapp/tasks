@@ -24,12 +24,12 @@ class SimpleTaskClient(private val registry: Registry, private val clazzLoader: 
 
     override fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,
-        taskName: String,
+        qualifiedTaskName: String,
         input: I,
         outputClazz: KClass<O>
     ): O {
         @Suppress("UNCHECKED_CAST")
-        val task = taskFactory.createInstance(taskName) as BlockingTask<I, O>
+        val task = taskFactory.createInstance(qualifiedTaskName) as BlockingTask<I, O>
 
         val decorated = BlockingTaskOTDecorator(registry, task)
         val executionContext = buildExecutionContext(ctx)
@@ -45,14 +45,14 @@ class SimpleTaskClient(private val registry: Registry, private val clazzLoader: 
 
     override fun <I : Any, O : Any> execAsync(
         ctx: ClientContext,
-        taskName: String,
+        qualifiedTaskName: String,
         channelLocator: AsyncResultChannelSinkLocator,
         channelId: UniqueId,
         input: I,
         outputClazz: KClass<O>
     ) {
         @Suppress("UNCHECKED_CAST")
-        val task = taskFactory.createInstance(taskName) as AsyncTask<I, O>
+        val task = taskFactory.createInstance(qualifiedTaskName) as AsyncTask<I, O>
 
         // hook in logging producer / consumer pair
         val loggingConsumerContext = logChannelLocatorFactory.consumer(ctx.logChannelLocator())
@@ -64,9 +64,9 @@ class SimpleTaskClient(private val registry: Registry, private val clazzLoader: 
 
     override fun <I : Any, O : Any> taskDocs(
         ctx: ClientContext,
-        taskName: String
+        qualifiedTaskName: String
     ): TaskDoc<I, O> {
-        val task = taskFactory.createInstance(taskName)
+        val task = taskFactory.createInstance(qualifiedTaskName)
         if (task is TaskDoc<*, *>) {
             @Suppress("UNCHECKED_CAST")
             return TaskDocHolder(
@@ -74,7 +74,7 @@ class SimpleTaskClient(private val registry: Registry, private val clazzLoader: 
                 task.examples() as List<TaskExample<I, O>>
             )
         } else {
-            throw RuntimeException("No TaskDoc for task: $taskName")
+            throw RuntimeException("No TaskDoc for task: $qualifiedTaskName")
         }
     }
 

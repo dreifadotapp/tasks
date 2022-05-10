@@ -54,6 +54,37 @@ Tasks have three key characteristics:
 * conform to the rules
   in [Really Simple Serializer](https://github.com/dreifadotapp/really-simple-serialization/blob/master/README.md)
 
+## Naming Conventions
+
+The convention is that for humans the type of task should be clear from the class name and easy to locate in an IDE. A
+set of related tasks should have a common prefix in their name and that they always have the suffix Task. For example,
+Terraform tasks might be named 'TFXxxTask' and Kubernetes tasks 'K8XxxTask'. The purpose of this convention is ease of
+use in IDEs and UIs. This is known as the `taskName` in method signatures.
+
+Programmatically the full qualified Java class name is always used. This avoids any possible ambiguity in
+the class name. This is known as the `qualifiedTaskName` in method signatures.
+
+In some cases both a real and fake implementation of the Task are provided. The expected convention is below.
+
+```kotlin
+package com.acme
+
+// - using 'Acme' as the common prefix
+// - given a file name , will return the content as text
+interface AcmeReadTextFileTask : BlockingTask<String, String>
+
+class AcmeReadTextFileTaskImpl : FooReadTextFileTask {
+    // - the real task
+}
+
+class AcmeReadTextFileTaskFake : FooReadTextFileTask {
+    // - a fake task
+    // - will often capture the inputs to satisfy the `spy` test pattern
+    // - may respond to hard coded `magic` inputs to simulate specific conditions, e.g. 
+    //   `missing.txt` generates a FileNotFound exception
+}
+```
+
 ## Blocking Tasks
 
 The most basic form is a `BlockingTask`. A simple example is below:
@@ -85,7 +116,7 @@ A `Task` can be created and executed in three ways:
     - hides setup of the `ExecutionContext` from the caller
     - passes the security principles required for any authentication and downstream system access within the tasks.
       _please note that currently this requirement is not well understood, however certain patterns are likely to occur
-      - this is detailed later on_
+        - this is detailed later on_
 
 `TaskDocExamples.kt` has full source code for the examples below.
 
@@ -421,7 +452,6 @@ To support this there is prebuilt support for common problems including:
 ## Provisioners and Templates
 
 **Work in progress**
-
 
 ### - Testing is built in
 

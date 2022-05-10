@@ -16,14 +16,14 @@ import kotlin.reflect.KClass
 interface TaskClient {
     fun <I : Any, O : Any> execBlocking(
         ctx: ClientContext,
-        taskName: String,
+        qualifiedTaskName: String,
         input: I,
         outputClazz: KClass<O>  // need access to the output clazz for serialization
     ): O
 
     fun <I : Any, O : Any> execAsync(
         ctx: ClientContext,
-        taskName: String,
+        qualifiedTaskName: String,
         channelLocator: AsyncResultChannelSinkLocator,
         channelId: UniqueId,
         input: I,
@@ -35,6 +35,6 @@ interface TaskClient {
      */
     fun <I : Any, O : Any> taskDocs(
         ctx: ClientContext,
-        taskName: String
+        qualifiedTaskName: String
     ): TaskDoc<I, O>
 }

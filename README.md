@@ -58,19 +58,19 @@ JitPack build status is at https://jitpack.io/com/github/dreifadotapp/tasks/$rel
 ## Testing with Open Telemetry
 
 Open Telemetry support is being added and certain test cases will produce telemetry. The telemetry will be captured
-by Zipkin if running locally. The easiest way to run Zipkin is via Docker.
+by Jaeger if running. The easiest way to run Jaeger is via Docker.
 
 ```bash
-docker run --rm -it --name zipkin \
-  -p 9411:9411 -d \
-  openzipkin/zipkin:latest
+docker run --rm -it --name jaeger\
+  -p 16686:16686 \
+  -p 14250:14250 -d \
+  jaegertracing/all-in-one:latest
 ```
 
-Then open the [Zipkin UI](http://localhost:9411/zipkin/).
+Then open the [Jaeger UI](http://localhost:16686/search)
 
-Each test run is tagged with a unique booking ref style test id. To filter on a specific
-id edit open [this link](http://localhost:9411/zipkin/?annotationQuery=dreifa.correlation.testId%3Datestid) and
-edit `atestid`
+Each test run is tagged with a unique booking ref style test id.
+
 
 ## Next Steps
 

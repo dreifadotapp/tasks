@@ -2,9 +2,7 @@ package dreifa.app.tasks.opentelemetry
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
-import dreifa.app.opentelemetry.OpenTelemetryContext
-import dreifa.app.opentelemetry.ZipKinOpenTelemetryProvider
-import dreifa.app.opentelemetry.analyser
+import dreifa.app.opentelemetry.*
 import dreifa.app.registry.Registry
 import dreifa.app.tasks.TaskFactory
 import dreifa.app.tasks.client.SimpleClientContext
@@ -113,7 +111,7 @@ class OpenTelemetryScenarios {
         assertThat(taskSpan.name, equalTo("ExceptionGeneratingBlockingTask"))
         assertThat(taskSpan.kind, equalTo(SpanKind.SERVER))
         assert(taskSpan.parentSpanId != Span.getInvalid().toString())
-        assertThat(taskSpan.status, equalTo(StatusData.error()))
+        assertThat(taskSpan.status, equalTo(StatusData.create(StatusCode.ERROR, "This will create an Exception")))
     }
 
     @Test
@@ -150,9 +148,9 @@ class OpenTelemetryScenarios {
     }
 
     @AfterAll
-    fun `wait for zipkin`() {
-        // give it time to flush to zipkin before closing
-        Thread.sleep(50)
+    fun `wait to flush telemetry`() {
+        // give some time to flush to the exporter before closing
+        Thread.sleep(100)
     }
 
     private fun outerSpan(tracer: Tracer): Span {
@@ -166,9 +164,9 @@ class OpenTelemetryScenarios {
         span.end()
     }
 
-    private fun init(): Triple<Registry, ZipKinOpenTelemetryProvider, Tracer> {
+    private fun init(): Triple<Registry, OpenTelemetryProvider, Tracer> {
         val reg = Registry()
-        val provider = ZipKinOpenTelemetryProvider()
+        val provider = JaegerOpenTelemetryProvider(true)
         val tracer = provider.sdk().getTracer("OpenTelemetryScenarios")
         val inMemoryLogging = InMemoryLoggingRepo()
         reg.store(provider).store(tracer).store(taskFactory).store(inMemoryLogging)

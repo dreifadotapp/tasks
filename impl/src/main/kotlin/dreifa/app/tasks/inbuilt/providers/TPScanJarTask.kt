@@ -31,7 +31,10 @@ data class TPScanJarRequest(
  * A Task to scan a FileBundle with Jar file for any implementation   of `TaskRegistrations`
  * The FileBundle must have been stored by calling the FBStoreTask request
  */
-interface TPScanJarTask : BlockingTask<TPScanJarRequest, StringList>
+interface TPScanJarTask : BlockingTask<TPScanJarRequest, StringList> {
+    override fun taskName(): String = TPScanJarTask::class.simpleName!!
+}
+
 
 class TPScanJarTaskImpl(reg: Registry) : BlockingTask<TPScanJarRequest, StringList>, TPScanJarTask {
     private val retrieveBundleTask = FBRetrieveTaskImpl(reg)

@@ -25,7 +25,9 @@ data class TPQueryResultItem(val providerId: UniqueId, val providerClazz: String
 
 class TPQueryResult(data: List<TPQueryResultItem>) : ArrayList<TPQueryResultItem>(data)
 
-interface TPQueryTask : BlockingTask<TPQueryParams, TPQueryResult>
+interface TPQueryTask : BlockingTask<TPQueryParams, TPQueryResult> {
+    override fun taskName(): String = TPQueryTask::class.simpleName!!
+}
 
 class TPQueryTaskImpl(registry: Registry) : BlockingTask<TPQueryParams, TPQueryResult>, TPQueryTask {
     private val ses = registry.get(EventStore::class.java)

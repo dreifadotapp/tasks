@@ -166,7 +166,7 @@ class OpenTelemetryScenarios {
 
     private fun init(): Triple<Registry, OpenTelemetryProvider, Tracer> {
         val reg = Registry()
-        val provider = JaegerOpenTelemetryProvider(true)
+        val provider = JaegerOpenTelemetryProvider(true, "tasks-lib")
         val tracer = provider.sdk().getTracer("OpenTelemetryScenarios")
         val inMemoryLogging = InMemoryLoggingRepo()
         reg.store(provider).store(tracer).store(taskFactory).store(inMemoryLogging)

@@ -70,7 +70,7 @@ class OpenTelemetryScenarios {
         assertThat(spansAnalyser.spanIds().size, equalTo(2))
         val taskSpan = spansAnalyser.secondSpan()
         assertThat(taskSpan.name, equalTo("EchoStringTask"))
-        assertThat(taskSpan.kind, equalTo(SpanKind.SERVER))
+        assertThat(taskSpan.kind, equalTo(SpanKind.INTERNAL))
         assert(taskSpan.parentSpanId != Span.getInvalid().toString())
         assertThat(taskSpan.status, equalTo(StatusData.ok()))
     }
@@ -109,7 +109,7 @@ class OpenTelemetryScenarios {
         assertThat(spansAnalyser.spanIds().size, equalTo(2))
         val taskSpan = spansAnalyser.secondSpan()
         assertThat(taskSpan.name, equalTo("ExceptionGeneratingBlockingTask"))
-        assertThat(taskSpan.kind, equalTo(SpanKind.SERVER))
+        assertThat(taskSpan.kind, equalTo(SpanKind.INTERNAL))
         assert(taskSpan.parentSpanId != Span.getInvalid().toString())
         assertThat(taskSpan.status, equalTo(StatusData.create(StatusCode.ERROR, "This will create an Exception")))
     }
@@ -140,7 +140,7 @@ class OpenTelemetryScenarios {
         assertThat(clientSpan.name, equalTo("DummyClient"))
         val taskSpan = spansAnalyser.secondSpan()
         assertThat(taskSpan.name, equalTo("EchoStringTask"))
-        assertThat(taskSpan.kind, equalTo(SpanKind.SERVER))
+        assertThat(taskSpan.kind, equalTo(SpanKind.INTERNAL))
         assert(taskSpan.parentSpanId != Span.getInvalid().toString())
         assertThat(taskSpan.status, equalTo(StatusData.ok()))
         assertThat(taskSpan.attributes.size(), equalTo(1))

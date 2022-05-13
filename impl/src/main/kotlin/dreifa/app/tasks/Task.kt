@@ -16,6 +16,11 @@ interface Task {
     fun taskName(): String {
         return this::class.simpleName!!
     }
+
+    fun taskQualifiedName(): String {
+        // rather ugly :(
+        return this::class.qualifiedName!!.removeSuffix(this::class.simpleName!!) + taskName()
+    }
 }
 
 /**

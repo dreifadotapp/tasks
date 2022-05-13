@@ -59,7 +59,7 @@ class BlockingTaskOTDecorator<in I, out O>(reg: Registry, private val task: Bloc
 
     private fun startSpan(ctx: ExecutionContext): Pair<Span, ExecutionContext> {
         val span = tracer!!.spanBuilder(task.taskName())
-            .setSpanKind(SpanKind.SERVER)
+            .setSpanKind(ctx.telemetryContext().spanKind ?: SpanKind.SERVER)
             .startSpan()
         ctx.correlation().forEach {
             span.setAttribute(it.openTelemetryAttrName, it.id.toString())

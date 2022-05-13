@@ -9,6 +9,7 @@ import dreifa.app.tasks.logging.LoggingChannelFactory
 import dreifa.app.tasks.logging.LoggingProducerToConsumer
 import dreifa.app.tasks.opentelemetry.BlockingTaskOTDecorator
 import dreifa.app.types.UniqueId
+import io.opentelemetry.api.trace.SpanKind
 import java.lang.RuntimeException
 import kotlin.reflect.KClass
 
@@ -83,9 +84,12 @@ class SimpleTaskClient(private val registry: Registry, private val clazzLoader: 
         val loggingConsumerContext = logChannelLocatorFactory.consumer(ctx.logChannelLocator())
         val producerContext = LoggingProducerToConsumer(loggingConsumerContext)
 
+        // as this a local client, explicitly set to INTERNAL span kind
+        val telemetryContext = ctx.telemetryContext().context().copy(spanKind = SpanKind.INTERNAL)
+
         return SimpleExecutionContext(
             loggingProducerContext = producerContext,
-            telemetryContext = ctx.telemetryContext().context(),
+            telemetryContext = telemetryContext,
             correlation = ctx.correlation()
         )
     }

@@ -4,6 +4,7 @@ import dreifa.app.registry.Registry
 import dreifa.app.ses.*
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
+import dreifa.app.tasks.inbuilt.providers.TPQueryTask
 import dreifa.app.types.LikeString
 import dreifa.app.types.UniqueId
 
@@ -20,7 +21,9 @@ data class FBQueryResultItem(val bundleId: UniqueId, val name: String) {
 
 class FBQueryResult(data: List<FBQueryResultItem>) : ArrayList<FBQueryResultItem>(data)
 
-interface FBQueryTask : BlockingTask<FBQueryParams, FBQueryResult>
+interface FBQueryTask : BlockingTask<FBQueryParams, FBQueryResult> {
+    override fun taskName(): String = TPQueryTask::class.simpleName!!
+}
 
 class FBQueryTaskImpl(registry: Registry) : BlockingTask<FBQueryParams, FBQueryResult>, FBQueryTask {
     private val ses = registry.get(EventStore::class.java)

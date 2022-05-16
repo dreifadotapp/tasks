@@ -8,13 +8,16 @@ import dreifa.app.tasks.Locations
 import dreifa.app.tasks.NotRemotableTask
 import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.tasks.inbuilt.fileBundle.FBRetrieveTaskImpl
+import dreifa.app.tasks.inbuilt.providers.TPQueryTask
 import dreifa.app.types.UniqueId
 import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.HashMap
 
-interface CLLoadJarTask : BlockingTask<UniqueId, URLClassLoader>, NotRemotableTask
+interface CLLoadJarTask : BlockingTask<UniqueId, URLClassLoader>, NotRemotableTask {
+    override fun taskName(): String = TPQueryTask::class.simpleName!!
+}
 
 class CLLoadJarTaskImpl(reg: Registry) : BlockingTask<UniqueId, URLClassLoader>, CLLoadJarTask {
     private val retrieveBundleTask = FBRetrieveTaskImpl(reg)

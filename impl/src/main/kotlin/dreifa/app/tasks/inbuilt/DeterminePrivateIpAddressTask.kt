@@ -2,6 +2,7 @@ package dreifa.app.tasks.inbuilt
 
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
+import dreifa.app.tasks.inbuilt.providers.TPQueryTask
 import dreifa.app.tasks.logging.LogMessage
 import dreifa.app.types.NotRequired
 import java.io.BufferedReader
@@ -16,7 +17,9 @@ import java.util.*
  * with the known cloud APIs or picks up a forced setting
  */
 
-interface DeterminePrivateIpAddressTask : BlockingTask<NotRequired, String>
+interface DeterminePrivateIpAddressTask : BlockingTask<NotRequired, String> {
+    override fun taskName(): String = TPQueryTask::class.simpleName!!
+}
 
 class DeterminePrivateIpAddressTaskImpl : DeterminePrivateIpAddressTask {
 

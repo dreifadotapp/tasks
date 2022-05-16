@@ -13,10 +13,13 @@ import dreifa.app.sks.SKSKeyValue
 import dreifa.app.sks.SKSValueType
 import dreifa.app.tasks.*
 import dreifa.app.tasks.executionContext.ExecutionContext
+import dreifa.app.tasks.inbuilt.providers.TPQueryTask
 import dreifa.app.types.Key
 import dreifa.app.types.UniqueId
 
-interface FBStoreTask : BlockingTask<String, Unit>, TaskDoc<String, Unit>
+interface FBStoreTask : BlockingTask<String, Unit>, TaskDoc<String, Unit> {
+    override fun taskName(): String = TPQueryTask::class.simpleName!!
+}
 
 object FBStoredEventFactory : EventFactory {
     fun create(params: FileBundle): Event {

@@ -6,11 +6,14 @@ import dreifa.app.ses.*
 import dreifa.app.sks.SKS
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.executionContext.ExecutionContext
+import dreifa.app.tasks.inbuilt.providers.TPQueryTask
 import dreifa.app.types.Key
 import dreifa.app.types.UniqueId
 import java.lang.RuntimeException
 
-interface FBRetrieveTask : BlockingTask<UniqueId, String>
+interface FBRetrieveTask : BlockingTask<UniqueId, String> {
+    override fun taskName(): String = TPQueryTask::class.simpleName!!
+}
 
 class FBRetrieveTaskImpl(registry: Registry) : BlockingTask<UniqueId, String>, FBRetrieveTask {
     private val ses = registry.get(EventStore::class.java)

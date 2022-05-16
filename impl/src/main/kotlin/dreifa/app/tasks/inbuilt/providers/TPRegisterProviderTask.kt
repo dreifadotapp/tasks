@@ -32,7 +32,9 @@ data class TPRegisterProviderRequest(
     val providerName: String
 )
 
-interface TPRegisterProviderTask : BlockingTask<TPRegisterProviderRequest, Unit>, IdempotentTask
+interface TPRegisterProviderTask : BlockingTask<TPRegisterProviderRequest, Unit>, IdempotentTask {
+    override fun taskName(): String = TPQueryTask::class.simpleName!!
+}
 
 object TPProviderRegisteredEventFactory : EventFactory {
     fun create(params: TPRegisterProviderRequest): Event {

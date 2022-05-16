@@ -14,7 +14,9 @@ data class TPInfoResult(
     val providerName: String
 )
 
-interface TPInfoTask : BlockingTask<UniqueId, TPInfoResult>
+interface TPInfoTask : BlockingTask<UniqueId, TPInfoResult> {
+    override fun taskName(): String = TPQueryTask::class.simpleName!!
+}
 
 class TPInfoTaskImpl(registry: Registry) : BlockingTask<UniqueId, TPInfoResult>, TPInfoTask {
     private val ses = registry.get(EventStore::class.java)

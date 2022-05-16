@@ -21,7 +21,9 @@ import java.io.File
  *  - setup a custom Java classloader for the JAR files(s)
  *  - configure and return a TaskFactory
  */
-interface TPLoadTaskFactoryTask : BlockingTask<UniqueId, TaskFactory>, NotRemotableTask
+interface TPLoadTaskFactoryTask : BlockingTask<UniqueId, TaskFactory>, NotRemotableTask {
+    override fun taskName(): String = TPQueryTask::class.simpleName!!
+}
 
 class TPLoadTaskFactoryTaskImpl(private val reg: Registry) : BlockingTask<UniqueId, TaskFactory>,
     TPLoadTaskFactoryTask {

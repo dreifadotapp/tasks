@@ -49,7 +49,7 @@ class FBStoreTaskImpl(registry: Registry) : BlockingTask<String, Unit>, FBStoreT
         )
         sks.put(kv)
         // store event - the bundle is only considered "committed" once the event is written
-        ses.store(FBStoredEventFactory.create(bundle))
+        ses.store(ctx.eventClientContext(), FBStoredEventFactory.create(bundle))
     }
 
     override fun description(): String = "This task stores a FileBundle. The FileBundle must be passed in its text " +

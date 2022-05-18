@@ -1,11 +1,13 @@
 package dreifa.app.tasks.inbuilt.providers
 
 import dreifa.app.registry.Registry
+import dreifa.app.ses.ClientContext
 import dreifa.app.ses.Event
 import dreifa.app.ses.EventFactory
 import dreifa.app.ses.EventStore
 import dreifa.app.tasks.BlockingTask
 import dreifa.app.tasks.IdempotentTask
+import dreifa.app.tasks.eventClientContext
 import dreifa.app.tasks.executionContext.ExecutionContext
 import dreifa.app.types.UniqueId
 
@@ -53,6 +55,6 @@ class TPRegisterProviderTaskImpl(val registry: Registry) : BlockingTask<TPRegist
     private val ses = registry.get(EventStore::class.java)
     override fun exec(ctx: ExecutionContext, input: TPRegisterProviderRequest) {
         val ev = TPProviderRegisteredEventFactory.create(input)
-        ses.store(ev)
+        ses.store(ctx.eventClientContext(), ev)
     }
 }

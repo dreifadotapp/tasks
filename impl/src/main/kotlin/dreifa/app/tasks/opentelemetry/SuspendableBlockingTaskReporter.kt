@@ -10,8 +10,10 @@ import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
 import io.opentelemetry.extension.kotlin.asContextElement
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 abstract class SuspendableBlockingTaskReporter<in I, out O>(reg: Registry) : BlockingTask<I, O> {
     private val provider = reg.get(OpenTelemetryProvider::class.java)

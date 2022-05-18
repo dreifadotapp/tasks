@@ -47,7 +47,8 @@ interface ClientContext : ClientContextModifier {
 
     /**
      * Optionally pass some correlation information in from the client
-     * This is included in the telemetry for logging and so.
+     * This is included in the telemetry (if enabled) and conventional logging
+     *
      */
     fun correlation(): CorrelationContexts
 }

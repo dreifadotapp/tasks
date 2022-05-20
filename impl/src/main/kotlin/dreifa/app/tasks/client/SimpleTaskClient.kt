@@ -1,5 +1,7 @@
 package dreifa.app.tasks.client
 
+import dreifa.app.opentelemetry.ContextHelper
+import dreifa.app.opentelemetry.OpenTelemetryProvider
 import dreifa.app.registry.Registry
 import dreifa.app.sis.JsonSerialiser
 import dreifa.app.tasks.*
@@ -10,6 +12,11 @@ import dreifa.app.tasks.logging.LoggingProducerToConsumer
 import dreifa.app.tasks.opentelemetry.BlockingTaskOTDecorator
 import dreifa.app.types.UniqueId
 import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.extension.kotlin.asContextElement
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.lang.RuntimeException
 import kotlin.reflect.KClass
 
@@ -17,9 +24,12 @@ import kotlin.reflect.KClass
 /**
  * Enough for unit tests and tasks running locally.
  */
-class SimpleTaskClient(private val registry: Registry, private val clazzLoader: ClassLoader? = null) : TaskClient {
+class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader? = null) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
     private val serialiser = JsonSerialiser(clazzLoader)
+    private val tracer = registry.getOrNull(Tracer::class.java)
+    private val provider = registry.getOrNull(OpenTelemetryProvider::class.java)
+
     private val logChannelLocatorFactory =
         registry.getOrElse(LoggingChannelFactory::class.java, DefaultLoggingChannelFactory(registry))
 
@@ -39,10 +49,9 @@ class SimpleTaskClient(private val registry: Registry, private val clazzLoader: 
             //        it makes no sense to call a NonRemotable task via the TaskClient
             decorated.exec(executionContext, input)
         } else {
-            roundTripOutput(decorated.exec(executionContext, roundTripInput(input)))
+            roundTripOutput(ctx, decorated.exec(executionContext, roundTripInput(input)))
         }
     }
-
 
     override fun <I : Any, O : Any> execAsync(
         ctx: ClientContext,
@@ -99,8 +108,28 @@ class SimpleTaskClient(private val registry: Registry, private val clazzLoader: 
         return serialiser.fromPacket(serialiser.toPacket(input)).any() as I
     }
 
-    private fun <O : Any> roundTripOutput(output: O): O {
-        @Suppress("UNCHECKED_CAST")
-        return serialiser.fromPacket(serialiser.toPacket(output)).any() as O
+    private fun <O : Any> roundTripOutput(ctx: ClientContext, output: O): O {
+        return if (tracer != null && provider != null) {
+            return runBlocking {
+                val helper = ContextHelper(provider)
+                withContext(helper.createContext(ctx.telemetryContext()).asContextElement()) {
+                    val span = tracer!!.spanBuilder("roundTripOutput")
+                        .setSpanKind(SpanKind.INTERNAL)
+                        .startSpan()
+                    try {
+                        @Suppress("UNCHECKED_CAST")
+                        val result = serialiser.fromPacket(serialiser.toPacket(output)).any() as O
+                        span.setStatus(StatusCode.OK).end()
+                        result
+                    } catch (ex: Exception) {
+                        span.recordException(ex).setStatus(StatusCode.ERROR).end()
+                        throw ex
+                    }
+                }
+            }
+        } else {
+            @Suppress("UNCHECKED_CAST")
+            serialiser.fromPacket(serialiser.toPacket(output)).any() as O
+        }
     }
 }

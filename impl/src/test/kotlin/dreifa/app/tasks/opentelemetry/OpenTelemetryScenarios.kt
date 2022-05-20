@@ -67,7 +67,7 @@ class OpenTelemetryScenarios {
         // 3. verify
         val spansAnalyser = provider.spans().analyser()
         assertThat(spansAnalyser.traceIds().size, equalTo(1))
-        assertThat(spansAnalyser.spanIds().size, equalTo(2))
+        assertThat(spansAnalyser.spanIds().size, equalTo(3)) // includes internal tracing
         val taskSpan = spansAnalyser.secondSpan()
         assertThat(taskSpan.name, equalTo("dreifa.app.tasks.demo.echo.EchoStringTask"))
         assertThat(taskSpan.kind, equalTo(SpanKind.INTERNAL))

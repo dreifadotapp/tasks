@@ -1,8 +1,6 @@
 package dreifa.app.tasks.client
 
-import dreifa.app.opentelemetry.ContextHelper
-import dreifa.app.opentelemetry.OpenTelemetryContext
-import dreifa.app.opentelemetry.OpenTelemetryProvider
+import dreifa.app.opentelemetry.*
 import dreifa.app.registry.Registry
 import dreifa.app.sis.JsonSerialiser
 import dreifa.app.tasks.*
@@ -21,7 +19,6 @@ import kotlinx.coroutines.withContext
 import java.lang.RuntimeException
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
-
 
 /**
  * Enough for unit tests and tasks running locally.
@@ -98,7 +95,7 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
     }
 
     private fun <I : Any> roundTripInput(ctx: ClientContext, input: I): I {
-        return runWithTelemetry(
+        return Helpers.runWithTelemetry(
             registry = registry,
             telemetryContext = ctx.telemetryContext().context(),
             spanDetails = SpanDetails("roundTripOutput", SpanKind.INTERNAL),
@@ -108,7 +105,7 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
     }
 
     private fun <O : Any> roundTripOutput(ctx: ClientContext, output: O): O {
-        return runWithTelemetry(
+        return Helpers.runWithTelemetry(
             registry = registry,
             telemetryContext = ctx.telemetryContext().context(),
             spanDetails = SpanDetails("roundTripOutput", SpanKind.INTERNAL),
@@ -116,59 +113,4 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
             @Suppress("UNCHECKED_CAST") serialiser.fromPacket(serialiser.toPacket(output)).any() as O
         }
     }
-}
-
-data class SpanDetails(val name: String, val kind: SpanKind)
-enum class ExceptionStrategy { recordAndThrow, throwOnly }
-
-fun <T> runWithTelemetry(
-    coroutineContext: CoroutineContext = kotlin.coroutines.EmptyCoroutineContext,
-    tracer: Tracer? = null,
-    provider: OpenTelemetryProvider? = null,
-    telemetryContext: OpenTelemetryContext,
-    spanDetails: SpanDetails,
-    exceptionStrategy: ExceptionStrategy = ExceptionStrategy.recordAndThrow,
-    block: () -> T
-): T {
-    return if (tracer != null && provider != null) {
-        runBlocking(coroutineContext) {
-            val helper = ContextHelper(provider)
-            withContext(helper.createContext(telemetryContext).asContextElement()) {
-                val span = tracer!!.spanBuilder(spanDetails.name).setSpanKind(spanDetails.kind).startSpan()
-                try {
-                    val result = block.invoke()
-                    span.setStatus(StatusCode.OK).end()
-                    result
-                } catch (ex: Exception) {
-                    if (exceptionStrategy == ExceptionStrategy.recordAndThrow) {
-                        span.recordException(ex)
-                    }
-                    span.setStatus(StatusCode.ERROR).end()
-                    throw ex
-                }
-
-            }
-        }
-    } else {
-        block.invoke()
-    }
-}
-
-fun <T> runWithTelemetry(
-    coroutineContext: CoroutineContext = kotlin.coroutines.EmptyCoroutineContext,
-    registry: Registry,
-    telemetryContext: OpenTelemetryContext,
-    spanDetails: SpanDetails,
-    exceptionStrategy: ExceptionStrategy = ExceptionStrategy.recordAndThrow,
-    block: () -> T
-): T {
-    return runWithTelemetry(
-        coroutineContext,
-        registry.getOrNull(Tracer::class.java),
-        registry.getOrNull(OpenTelemetryProvider::class.java),
-        telemetryContext,
-        spanDetails,
-        exceptionStrategy,
-        block
-    )
 }

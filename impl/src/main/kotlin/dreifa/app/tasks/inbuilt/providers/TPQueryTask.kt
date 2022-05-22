@@ -34,36 +34,37 @@ class TPQueryTaskImpl(registry: Registry) : BlockingTask<TPQueryParams, TPQueryR
 
     override fun exec(ctx: ExecutionContext, input: TPQueryParams): TPQueryResult {
         if (input.providerId != null && input.nameIsLike != null) {
-            val id = queryById(input.providerId)
+            val id = queryById(ctx, input.providerId)
             val likeString = LikeString(input.nameIsLike)
             return TPQueryResult(id.filter { likeString.matches(it.providerName) })
         }
-        if (input.providerId != null) return queryById(input.providerId)
-        if (input.nameIsLike != null) return queryByName(input.nameIsLike)
-        return queryAll()   // no parameters set, so return all
+        if (input.providerId != null) return queryById(ctx, input.providerId)
+        if (input.nameIsLike != null) return queryByName(ctx, input.nameIsLike)
+        return queryAll(ctx)   // no parameters set, so return all
     }
 
-    private fun queryById(providerId: UniqueId): TPQueryResult {
+    private fun queryById(ctx: ExecutionContext, providerId: UniqueId): TPQueryResult {
         val query = AllOfQuery(
             EventTypeQuery(eventType = TPProviderRegisteredEventFactory.eventType()),
             AggregateIdQuery(aggregateId = providerId.toString())
         )
-        return runEventsQuery(query)
+        return runEventsQuery(ctx, query)
     }
 
-    private fun queryAll(): TPQueryResult {
+    private fun queryAll(ctx: ExecutionContext): TPQueryResult {
         val query = EventTypeQuery(eventType = TPProviderRegisteredEventFactory.eventType())
-        return runEventsQuery(query)
+        return runEventsQuery(ctx, query)
     }
 
-    private fun queryByName(nameLike: String): TPQueryResult {
-        val all = queryAll()
+    private fun queryByName(ctx: ExecutionContext, nameLike: String): TPQueryResult {
+        val all = queryAll(ctx)
         val likeString = LikeString(nameLike)
         return TPQueryResult(all.filter { likeString.matches(it.providerName) })
     }
 
-    private fun runEventsQuery(query: EventQuery): TPQueryResult {
-        val items = ses.read(query)
+    private fun runEventsQuery(ctx: ExecutionContext, query: EventQuery): TPQueryResult {
+        val etx = ClientContext(telemetryContext = ctx.telemetryContext())
+        val items = ses.read(etx, query)
             .map {
                 val payload = it.payloadAs(TPRegisterProviderRequest::class.java)
                 TPQueryResultItem(

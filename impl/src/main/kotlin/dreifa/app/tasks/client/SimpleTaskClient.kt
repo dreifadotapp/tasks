@@ -11,13 +11,7 @@ import dreifa.app.tasks.logging.LoggingProducerToConsumer
 import dreifa.app.tasks.opentelemetry.BlockingTaskOTDecorator
 import dreifa.app.types.UniqueId
 import io.opentelemetry.api.trace.SpanKind
-import io.opentelemetry.api.trace.StatusCode
-import io.opentelemetry.api.trace.Tracer
-import io.opentelemetry.extension.kotlin.asContextElement
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.lang.RuntimeException
-import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
 
 /**
@@ -38,8 +32,6 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
         val decorated = BlockingTaskOTDecorator(registry, task)
         val executionContext = buildExecutionContext(ctx)
         return if (task is NotRemotableTask) {
-            // TODO - should we simply be throwing an Exception here ?
-            //        it makes no sense to call a NonRemotable task via the TaskClient
             decorated.exec(executionContext, input)
         } else {
             val roundTrippedInput = roundTripInput(ctx, input)
@@ -98,7 +90,7 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
         return Helpers.runWithTelemetry(
             registry = registry,
             telemetryContext = ctx.telemetryContext().context(),
-            spanDetails = SpanDetails("roundTripOutput", SpanKind.INTERNAL),
+            spanDetails = SpanDetails("roundTripInput", SpanKind.INTERNAL),
         ) {
             @Suppress("UNCHECKED_CAST") serialiser.fromPacket(serialiser.toPacket(input)).any() as I
         }

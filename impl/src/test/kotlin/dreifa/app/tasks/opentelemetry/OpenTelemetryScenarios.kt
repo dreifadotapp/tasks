@@ -27,7 +27,6 @@ import org.junit.jupiter.api.TestInstance
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OpenTelemetryScenarios {
     private val taskFactory = TaskFactory().register(DemoTasks()).register(EchoTasks())
-
     @Test
     fun `should create new span`() {
         // 1. setup
@@ -67,8 +66,8 @@ class OpenTelemetryScenarios {
         // 3. verify
         val spansAnalyser = provider.spans().analyser()
         assertThat(spansAnalyser.traceIds().size, equalTo(1))
-        assertThat(spansAnalyser.spanIds().size, equalTo(3)) // includes internal tracing
-        val taskSpan = spansAnalyser.secondSpan()
+        assertThat(spansAnalyser.spanIds().size, equalTo(4)) // includes internal tracing
+        val taskSpan = spansAnalyser[2]
         assertThat(taskSpan.name, equalTo("dreifa.app.tasks.demo.echo.EchoStringTask"))
         assertThat(taskSpan.kind, equalTo(SpanKind.INTERNAL))
         assert(taskSpan.parentSpanId != Span.getInvalid().toString())
@@ -106,8 +105,8 @@ class OpenTelemetryScenarios {
         // 4. verify telemetry
         val spansAnalyser = provider.spans().analyser()
         assertThat(spansAnalyser.traceIds().size, equalTo(1))
-        assertThat(spansAnalyser.spanIds().size, equalTo(2))
-        val taskSpan = spansAnalyser.secondSpan()
+        assertThat(spansAnalyser.spanIds().size, equalTo(3)) // includes internal tracing
+        val taskSpan = spansAnalyser[2]
         assertThat(taskSpan.name, equalTo("dreifa.app.tasks.demo.ExceptionGeneratingBlockingTask"))
         assertThat(taskSpan.kind, equalTo(SpanKind.INTERNAL))
         assert(taskSpan.parentSpanId != Span.getInvalid().toString())
@@ -135,10 +134,10 @@ class OpenTelemetryScenarios {
         // 3. verify
         val spansAnalyser = provider.spans().analyser()
         assertThat(spansAnalyser.traceIds().size, equalTo(1))
-        assertThat(spansAnalyser.spanIds().size, equalTo(3)) // includes internal tracing
+        assertThat(spansAnalyser.spanIds().size, equalTo(4)) // includes internal tracing
         val clientSpan = spansAnalyser.firstSpan()
         assertThat(clientSpan.name, equalTo("DummyClient"))
-        val taskSpan = spansAnalyser.secondSpan()
+        val taskSpan = spansAnalyser[2]
         assertThat(taskSpan.name, equalTo("dreifa.app.tasks.demo.echo.EchoStringTask"))
         assertThat(taskSpan.kind, equalTo(SpanKind.INTERNAL))
         assert(taskSpan.parentSpanId != Span.getInvalid().toString())

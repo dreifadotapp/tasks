@@ -1,6 +1,7 @@
 package dreifa.app.tasks.client
 
 import dreifa.app.opentelemetry.ContextHelper
+import dreifa.app.opentelemetry.OpenTelemetryContext
 import dreifa.app.opentelemetry.OpenTelemetryProvider
 import dreifa.app.registry.Registry
 import dreifa.app.sis.JsonSerialiser
@@ -18,6 +19,7 @@ import io.opentelemetry.extension.kotlin.asContextElement
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.lang.RuntimeException
+import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.KClass
 
 
@@ -27,20 +29,14 @@ import kotlin.reflect.KClass
 class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader? = null) : TaskClient {
     private val taskFactory = registry.get(TaskFactory::class.java)
     private val serialiser = JsonSerialiser(clazzLoader)
-    private val tracer = registry.getOrNull(Tracer::class.java)
-    private val provider = registry.getOrNull(OpenTelemetryProvider::class.java)
 
     private val logChannelLocatorFactory =
         registry.getOrElse(LoggingChannelFactory::class.java, DefaultLoggingChannelFactory(registry))
 
     override fun <I : Any, O : Any> execBlocking(
-        ctx: ClientContext,
-        qualifiedTaskName: String,
-        input: I,
-        outputClazz: KClass<O>
+        ctx: ClientContext, qualifiedTaskName: String, input: I, outputClazz: KClass<O>
     ): O {
-        @Suppress("UNCHECKED_CAST")
-        val task = taskFactory.createInstance(qualifiedTaskName) as BlockingTask<I, O>
+        @Suppress("UNCHECKED_CAST") val task = taskFactory.createInstance(qualifiedTaskName) as BlockingTask<I, O>
 
         val decorated = BlockingTaskOTDecorator(registry, task)
         val executionContext = buildExecutionContext(ctx)
@@ -49,7 +45,9 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
             //        it makes no sense to call a NonRemotable task via the TaskClient
             decorated.exec(executionContext, input)
         } else {
-            roundTripOutput(ctx, decorated.exec(executionContext, roundTripInput(input)))
+            val roundTrippedInput = roundTripInput(ctx, input)
+            val output = decorated.exec(executionContext, roundTrippedInput)
+            roundTripOutput(ctx, output)
         }
     }
 
@@ -61,8 +59,7 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
         input: I,
         outputClazz: KClass<O>
     ) {
-        @Suppress("UNCHECKED_CAST")
-        val task = taskFactory.createInstance(qualifiedTaskName) as AsyncTask<I, O>
+        @Suppress("UNCHECKED_CAST") val task = taskFactory.createInstance(qualifiedTaskName) as AsyncTask<I, O>
 
         // hook in logging producer / consumer pair
         val loggingConsumerContext = logChannelLocatorFactory.consumer(ctx.logChannelLocator())
@@ -73,15 +70,12 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
     }
 
     override fun <I : Any, O : Any> taskDocs(
-        ctx: ClientContext,
-        qualifiedTaskName: String
+        ctx: ClientContext, qualifiedTaskName: String
     ): TaskDoc<I, O> {
         val task = taskFactory.createInstance(qualifiedTaskName)
         if (task is TaskDoc<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            return TaskDocHolder(
-                task.description(),
-                task.examples() as List<TaskExample<I, O>>
+            @Suppress("UNCHECKED_CAST") return TaskDocHolder(
+                task.description(), task.examples() as List<TaskExample<I, O>>
             )
         } else {
             throw RuntimeException("No TaskDoc for task: $qualifiedTaskName")
@@ -103,33 +97,78 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
         )
     }
 
-    private fun <I : Any> roundTripInput(input: I): I {
-        @Suppress("UNCHECKED_CAST")
-        return serialiser.fromPacket(serialiser.toPacket(input)).any() as I
+    private fun <I : Any> roundTripInput(ctx: ClientContext, input: I): I {
+        return runWithTelemetry(
+            registry = registry,
+            telemetryContext = ctx.telemetryContext().context(),
+            spanDetails = SpanDetails("roundTripOutput", SpanKind.INTERNAL),
+        ) {
+            @Suppress("UNCHECKED_CAST") serialiser.fromPacket(serialiser.toPacket(input)).any() as I
+        }
     }
 
     private fun <O : Any> roundTripOutput(ctx: ClientContext, output: O): O {
-        return if (tracer != null && provider != null) {
-            return runBlocking {
-                val helper = ContextHelper(provider)
-                withContext(helper.createContext(ctx.telemetryContext()).asContextElement()) {
-                    val span = tracer!!.spanBuilder("roundTripOutput")
-                        .setSpanKind(SpanKind.INTERNAL)
-                        .startSpan()
-                    try {
-                        @Suppress("UNCHECKED_CAST")
-                        val result = serialiser.fromPacket(serialiser.toPacket(output)).any() as O
-                        span.setStatus(StatusCode.OK).end()
-                        result
-                    } catch (ex: Exception) {
-                        span.recordException(ex).setStatus(StatusCode.ERROR).end()
-                        throw ex
-                    }
-                }
-            }
-        } else {
-            @Suppress("UNCHECKED_CAST")
-            serialiser.fromPacket(serialiser.toPacket(output)).any() as O
+        return runWithTelemetry(
+            registry = registry,
+            telemetryContext = ctx.telemetryContext().context(),
+            spanDetails = SpanDetails("roundTripOutput", SpanKind.INTERNAL),
+        ) {
+            @Suppress("UNCHECKED_CAST") serialiser.fromPacket(serialiser.toPacket(output)).any() as O
         }
     }
+}
+
+data class SpanDetails(val name: String, val kind: SpanKind)
+enum class ExceptionStrategy { recordAndThrow, throwOnly }
+
+fun <T> runWithTelemetry(
+    coroutineContext: CoroutineContext = kotlin.coroutines.EmptyCoroutineContext,
+    tracer: Tracer? = null,
+    provider: OpenTelemetryProvider? = null,
+    telemetryContext: OpenTelemetryContext,
+    spanDetails: SpanDetails,
+    exceptionStrategy: ExceptionStrategy = ExceptionStrategy.recordAndThrow,
+    block: () -> T
+): T {
+    return if (tracer != null && provider != null) {
+        runBlocking(coroutineContext) {
+            val helper = ContextHelper(provider)
+            withContext(helper.createContext(telemetryContext).asContextElement()) {
+                val span = tracer!!.spanBuilder(spanDetails.name).setSpanKind(spanDetails.kind).startSpan()
+                try {
+                    val result = block.invoke()
+                    span.setStatus(StatusCode.OK).end()
+                    result
+                } catch (ex: Exception) {
+                    if (exceptionStrategy == ExceptionStrategy.recordAndThrow) {
+                        span.recordException(ex)
+                    }
+                    span.setStatus(StatusCode.ERROR).end()
+                    throw ex
+                }
+
+            }
+        }
+    } else {
+        block.invoke()
+    }
+}
+
+fun <T> runWithTelemetry(
+    coroutineContext: CoroutineContext = kotlin.coroutines.EmptyCoroutineContext,
+    registry: Registry,
+    telemetryContext: OpenTelemetryContext,
+    spanDetails: SpanDetails,
+    exceptionStrategy: ExceptionStrategy = ExceptionStrategy.recordAndThrow,
+    block: () -> T
+): T {
+    return runWithTelemetry(
+        coroutineContext,
+        registry.getOrNull(Tracer::class.java),
+        registry.getOrNull(OpenTelemetryProvider::class.java),
+        telemetryContext,
+        spanDetails,
+        exceptionStrategy,
+        block
+    )
 }

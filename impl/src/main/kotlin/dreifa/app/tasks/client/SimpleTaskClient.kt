@@ -92,7 +92,8 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
             telemetryContext = ctx.telemetryContext().context(),
             spanDetails = SpanDetails("roundTripInput", SpanKind.INTERNAL),
         ) {
-            @Suppress("UNCHECKED_CAST") serialiser.fromPacket(serialiser.toPacket(input)).any() as I
+            @Suppress("UNCHECKED_CAST")
+            serialiser.fromPacket(serialiser.toPacket(input)).any() as I
         }
     }
 
@@ -102,7 +103,8 @@ class SimpleTaskClient(private val registry: Registry, clazzLoader: ClassLoader?
             telemetryContext = ctx.telemetryContext().context(),
             spanDetails = SpanDetails("roundTripOutput", SpanKind.INTERNAL),
         ) {
-            @Suppress("UNCHECKED_CAST") serialiser.fromPacket(serialiser.toPacket(output)).any() as O
+            @Suppress("UNCHECKED_CAST")
+            serialiser.fromPacket(serialiser.toPacket(output)).any() as O
         }
     }
 }
